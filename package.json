@@ -4,11 +4,15 @@
   "description": "A microservice backend for tracking proposed meetup topics and civic projects and voting on them",
   "main": "app.js",
   "scripts": {
+    "start": "node_modules/.bin/nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "express": "^4.18.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
   }
 }
