@@ -2,10 +2,10 @@
   "name": "services-proposals",
   "version": "1.0.0",
   "description": "A microservice backend for tracking proposed meetup topics and civic projects and voting on them",
-  "main": "app.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node_modules/.bin/nodemon app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node_modules/.bin/nodemon server.js",
+    "test": "vitest"
   },
   "author": "",
   "license": "ISC",
@@ -13,6 +13,8 @@
     "express": "^4.18.3"
   },
   "devDependencies": {
-    "nodemon": "^3.1.0"
+    "node-fetch": "^3.3.2",
+    "nodemon": "^3.1.0",
+    "vitest": "^1.3.1"
   }
 }

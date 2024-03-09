@@ -1,10 +1,7 @@
 const express = require("express");
 const app = express();
-const port = 3000;
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
+app.use(express.json());
 
 app.get("/topics", (req, res) => {
   const cursor = req.query.cursor || "start";
@@ -23,6 +20,8 @@ app.get("/topics", (req, res) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`services-proposals now listening on port ${port}`);
+app.get("/", (req, res) => {
+  res.send("Hello World!");
 });
+
+module.exports = app;
