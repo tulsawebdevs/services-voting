@@ -1,5 +1,5 @@
 # Specify the base image
-FROM node:14
+FROM node:lts
 
 # Set the working directory in the container
 WORKDIR /usr/src/app
