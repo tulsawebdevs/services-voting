@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node_modules/.bin/nodemon server.js",
-    "test": "vitest"
+    "test": "vitest watch",
+    "test:run": "vitest run"
   },
   "author": "",
   "license": "ISC",
