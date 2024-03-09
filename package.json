@@ -1,0 +1,14 @@
+{
+  "name": "services-proposals",
+  "version": "1.0.0",
+  "description": "A microservice backend for tracking proposed meetup topics and civic projects and voting on them",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.3"
+  }
+}
