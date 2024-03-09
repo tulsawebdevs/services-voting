@@ -1,12 +1,5 @@
-import { test, expect, beforeAll, afterAll, describe } from "vitest";
-import fetch from "node-fetch";
-import { createServer } from "http";
-import app from "../app";
-
-let server;
-
 describe("Topics API", () => {
-  test("GET /topics", async ({ expect }) => {
+  test("GET /topics", async () => {
     const response = await fetch("http://localhost:3000/topics");
     const data = await response.json();
 
