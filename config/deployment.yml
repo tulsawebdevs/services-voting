@@ -1,14 +1,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: services-proposals
-  labels:
-    app: services-proposals
+  name: proposals
+  namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: services-proposals
+      app: proposals
   strategy:
     rollingUpdate:
       maxSurge: 1
@@ -17,29 +16,11 @@ spec:
   template:
     metadata:
       labels:
-        app: services-proposals
+        app: proposals
     spec:
       containers:
-      - name: services-proposals
-        image: <IMAGE>
-        ports:
-        - containerPort: 80
-        resources:
-          requests:
-            cpu: 100m
-          limits:
-            cpu: 100m
----
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   name: services-proposals
-# spec:
-#   type: LoadBalancer
-#   ports:
-#     - name: http
-#       protocol: TCP
-#       port: 80
-#       targetPort: 80
-#   selector:
-#     app: services-proposals
+      - name: proposals
+        image: ghcr.io/tulsawebdevs/services-proposals:release
+        imagePullPolicy: Always
+        ports: 
+        - containerPort: 3000
