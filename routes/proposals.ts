@@ -1,9 +1,12 @@
-const express = require("express");
+import express from 'express';
+import ProposalsService from '../services/proposals';
+import { getPool } from '../database';
 
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  res.status(200).json({ message: "Paginated list of proposals" });
+router.get("/", async (req, res) => {
+  const proposals = ProposalsService.index();
+  res.status(200).json(proposals);
 });
 
 router.post("/", (req, res) => {
@@ -26,4 +29,4 @@ router.delete("/:id", (req, res) => {
   res.status(204).json(); // No Content
 });
 
-module.exports = router;
+export default router;

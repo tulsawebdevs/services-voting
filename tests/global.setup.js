@@ -1,5 +1,5 @@
 import { createServer } from "http";
-import app from "../app";
+import app from "../app.js";
 let server;
 
 export async function setup() {
