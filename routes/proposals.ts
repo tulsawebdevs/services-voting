@@ -5,7 +5,7 @@ import { getPool } from '../database';
 const router = express.Router();
 
 router.get("/", async (req, res) => {
-  const proposals = ProposalsService.index();
+  const proposals = await ProposalsService.index();
   res.status(200).json(proposals);
 });
 
