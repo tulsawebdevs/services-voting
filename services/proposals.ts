@@ -25,7 +25,19 @@ async function store(data: PendingProposal): Promise<Proposal> {
 	});
 }
 
+async function show(id: string): Promise<Proposal> {
+	const pool = await getPool();
+	return await pool.connect(async (connection) => {
+		const proposal = await connection.maybeOne(sql.type(Proposal)`
+		SELECT * FROM proposals WHERE id = ${id};`)
+
+		if (!proposal) throw new Error('Proposal not found');
+		return proposal;
+	});
+}
+
 export default {
 	index,
 	store,
+	show,
 }

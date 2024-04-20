@@ -37,9 +37,14 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/:id", (req, res) => {
-  const { id } = req.params;
-  res.status(200).json({ message: `Proposal with ID ${id}` });
+router.get("/:id", async (req, res) => {
+  let { id } = req.params;
+  try{
+    const proposal = await ProposalsService.show(id);
+    return res.status(200).json(proposal);
+  }catch(e){
+    return res.status(500).json({message: 'Server Error'})
+  }
 });
 
 router.post("/:id", (req, res) => {
