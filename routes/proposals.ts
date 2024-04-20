@@ -1,6 +1,5 @@
 import express from 'express';
 import ProposalsService from '../services/proposals';
-import { getPool } from '../database';
 
 const router = express.Router();
 

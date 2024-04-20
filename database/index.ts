@@ -39,6 +39,14 @@ const createResultParserInterceptor = (): Interceptor => {
 };
 export async function getPool(){
 	if (pool) return pool;
-	pool = await createPool(DB_URL)
+
+  console.log('Creating DB pool...')
+  try{
+    pool = await createPool(DB_URL)
+    console.log('DB pool created')
+  }catch(e){
+    console.log('Error creating DB pool: ', JSON.stringify(e))
+  }
+
 	return pool;
 }
