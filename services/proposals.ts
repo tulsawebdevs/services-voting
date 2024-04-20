@@ -1,13 +1,14 @@
 import { getPool } from '../database';
-import { SchemaValidationError, sql } from 'slonik';
-import { Proposal, PendingProposal } from '../types/proposal';
+import { sql } from 'slonik';
+import {update as slonikUpdate} from 'slonik-utilities';
+import { Proposal, PendingProposal, ProposalUpdate } from '../types/proposal';
 
 async function index(): Promise<readonly Proposal[]> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const rows = await connection.any(
 		sql.type(Proposal)`
-		SELECT * FROM proposals;`)
+		SELECT * FROM proposals ORDER BY id;`)
 
 		return rows;
 	});
@@ -36,8 +37,33 @@ async function show(id: string): Promise<Proposal> {
 	});
 }
 
+async function update(id: string, data: ProposalUpdate) {
+	const pool = await getPool();
+	return await pool.connect(async (connection) => {
+		return await slonikUpdate(
+			connection, 
+			'proposals', 
+			data, 
+			{id: parseInt(id)}
+		)
+
+		/* 
+		* Example of constructing update without slonik-utilities 
+		*/
+		// const updates = sql.join(
+		// 	Object.entries(data).map(([column, value]) => {
+		// 	return sql.fragment`${sql.identifier([column])} = ${value}`;
+		// }), sql.fragment`, `);
+
+		// return await connection.one(sql.type(Proposal)`
+		// UPDATE proposals SET ${updates} WHERE id = ${id} RETURNING *;
+		// `)
+	});
+}
+
 export default {
 	index,
 	store,
 	show,
+	update,
 }

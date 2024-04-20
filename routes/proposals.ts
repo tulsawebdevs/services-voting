@@ -2,7 +2,7 @@ import express from 'express';
 import ProposalsService from '../services/proposals';
 import { SchemaValidationError } from 'slonik';
 import { formatQueryErrorResponse } from '../helpers';
-import { PendingProposal } from '../types/proposal';
+import { PendingProposal, ProposalUpdate } from '../types/proposal';
 
 const router = express.Router();
 
@@ -46,10 +46,20 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/:id", (req, res) => {
+router.put("/:id", async (req, res) => {
   const { id } = req.params;
+  const data = req.body;
+  const validationResult = ProposalUpdate.safeParse(data);
+  if(!validationResult.success){
+    return res.status(422).json({message: 'Invalid data', error: validationResult.error})
+  }
 
-  res.status(200).json({ message: `Proposal with ID ${id} updated` });
+  try{
+    const result = await ProposalsService.update(id, validationResult.data);
+    res.status(200).json(result);
+  }catch(e){
+    return res.status(500).json({message: 'Server Error'})
+  }
 });
 
 router.delete("/:id", (req, res) => {
