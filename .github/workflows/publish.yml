@@ -57,18 +57,18 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-  deploy-to-cluster:
-    runs-on: ubuntu-latest
-    needs: build-and-push-image
-    steps:
-      - name: Update deployment file
-        run: TAG=$(echo $GITHUB_SHA | head -c7) && sed -i 's|<IMAGE>|${{ secrets.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:'${TAG}'|' $GITHUB_WORKSPACE/config/deployment.yml
+  # deploy-to-cluster:
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-push-image
+  #   steps:
+  #     - name: Update deployment file
+  #       run: TAG=$(echo $GITHUB_SHA | head -c7) && sed -i 's|<IMAGE>|${{ secrets.REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:'${TAG}'|' $GITHUB_WORKSPACE/config/deployment.yml
 
-      - name: Save DigitalOcean kubeconfig with short-lived credentials
-        run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 ${{ secrets.CLUSTER_NAME }}
+  #     - name: Save DigitalOcean kubeconfig with short-lived credentials
+  #       run: doctl kubernetes cluster kubeconfig save --expiry-seconds 600 ${{ secrets.CLUSTER_NAME }}
 
-      - name: Deploy to DigitalOcean Kubernetes
-        run: kubectl apply -f $GITHUB_WORKSPACE/config/deployment.yml
+  #     - name: Deploy to DigitalOcean Kubernetes
+  #       run: kubectl apply -f $GITHUB_WORKSPACE/config/deployment.yml
 
-      - name: Verify deployment
-        run: kubectl rollout status deployment/${{ env.IMAGE_NAME }}
+  #     - name: Verify deployment
+  #       run: kubectl rollout status deployment/${{ env.IMAGE_NAME }}
