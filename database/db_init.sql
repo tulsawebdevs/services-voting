@@ -5,6 +5,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+/*
+SETUP PROPOSALS TABLE
+*/
 CREATE TABLE if NOT EXISTS proposals (
 	title varchar(100) NOT NULL,
 	summary TEXT NOT NULL,
@@ -18,5 +21,23 @@ CREATE TABLE if NOT EXISTS proposals (
 
 CREATE OR REPLACE TRIGGER set_updated
 BEFORE UPDATE ON proposals
+FOR EACH ROW
+EXECUTE PROCEDURE trigger_set_updated();
+
+/*
+SETUP VOTING TABLE
+*/
+
+CREATE TABLE if NOT EXISTS votes (
+	voter_email TEXT NOT NULL,
+	proposal_id INT NOT NULL REFERENCES proposals(id),
+	vote INT NOT NULL,
+	created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	updated TIMESTAMP,
+	id SERIAL PRIMARY KEY
+);
+
+CREATE OR REPLACE TRIGGER set_updated
+BEFORE UPDATE ON votes
 FOR EACH ROW
 EXECUTE PROCEDURE trigger_set_updated();
