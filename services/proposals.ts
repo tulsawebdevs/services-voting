@@ -1,5 +1,5 @@
 import { getPool } from '../database';
-import { sql } from 'slonik';
+import { sql} from 'slonik';
 import {update as slonikUpdate} from 'slonik-utilities';
 import { Proposal, PendingProposal, ProposalUpdate } from '../types/proposal';
 
@@ -61,9 +61,19 @@ async function update(id: string, data: ProposalUpdate) {
 	});
 }
 
+async function destroy(id: string) {
+	const pool = await getPool();
+	return await pool.connect(async (connection) => {
+		return await connection.query(sql.unsafe`
+				DELETE FROM proposals WHERE id = ${id} RETURNING id, title;
+		`)
+	});
+}
+
 export default {
 	index,
 	store,
 	show,
 	update,
+	destroy,
 }

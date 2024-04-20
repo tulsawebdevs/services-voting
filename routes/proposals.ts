@@ -16,6 +16,7 @@ router.get("/", async (req, res) => {
         .json({message: 'Error fetching proposals: ' + formatQueryErrorResponse(e)})
     }
 
+    console.log(e)
     return res.status(500).json({message: 'Server Error'})
   }
 });
@@ -29,9 +30,9 @@ router.post("/", async (req, res) => {
 
   try{
     const proposal = await ProposalsService.store(data);
-    console.log("Created Proposal", JSON.stringify(proposal));
     return res.status(201).json({ success: true, proposal: JSON.stringify(proposal)});
   }catch(e){
+    console.log(e)
     return res.status(500).json({message: 'Server Error'})
   }
 });
@@ -42,6 +43,7 @@ router.get("/:id", async (req, res) => {
     const proposal = await ProposalsService.show(id);
     return res.status(200).json(proposal);
   }catch(e){
+    console.log(e)
     return res.status(500).json({message: 'Server Error'})
   }
 });
@@ -58,13 +60,20 @@ router.put("/:id", async (req, res) => {
     const result = await ProposalsService.update(id, validationResult.data);
     res.status(200).json(result);
   }catch(e){
+    console.log(e)
     return res.status(500).json({message: 'Server Error'})
   }
 });
 
-router.delete("/:id", (req, res) => {
+router.delete("/:id", async (req, res) => {
   const { id } = req.params;
-  res.status(204).json(); // No Content
+  try {
+    const result = await ProposalsService.destroy(id);
+    return res.status(200).json({count: result.rowCount, rows:result.rows}); 
+  }catch(e){
+    console.log(e)
+    return res.status(500).json({message: 'Server Error'})
+  }
 });
 
 export default router;
