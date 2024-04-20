@@ -1,4 +1,4 @@
-import { DatabasePool } from 'slonik';
+import { DatabasePool, createTypeParserPreset } from 'slonik';
 import { 
 	createPool, 
 	type Interceptor,
@@ -12,6 +12,7 @@ let pool: DatabasePool;
 
 const baseConfig = {
   interceptors: [createResultParserInterceptor()],
+  typeParsers:[...createTypeParserPreset()]
 }
 
 const envConfigs: {[env:string]:{}} = {
