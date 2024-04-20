@@ -10,7 +10,35 @@ const DB_URL = process.env.DB_URL || 'postgres://postgres:postgres@db:5432/postg
 const CA_CERT = process.env.CA_CERT
 let pool: DatabasePool;
 
-const createResultParserInterceptor = (): Interceptor => {
+const baseConfig = {
+  interceptors: [createResultParserInterceptor()],
+}
+
+const envConfigs: {[env:string]:{}} = {
+  production: {
+    ssl: {
+      ca: CA_CERT
+    }
+  },
+  development: {}
+};
+
+const dbConfig = {...baseConfig, ...envConfigs[process.env.NODE_ENV || 'development']};
+export async function getPool(){
+	if (pool) return pool;
+
+  console.log('Creating DB pool...')
+  try{
+    pool = await createPool(DB_URL, dbConfig)
+    console.log('DB pool created')
+  }catch(e){
+    console.log('Error creating DB pool: ', JSON.stringify(e))
+  }
+
+	return pool;
+}
+
+function createResultParserInterceptor(): Interceptor {
   return {
     // If you are not going to transform results using Zod, then you should use `afterQueryExecution` instead.
     // Future versions of Zod will provide a more efficient parser when parsing without transformations.
@@ -38,20 +66,3 @@ const createResultParserInterceptor = (): Interceptor => {
     },
   };
 };
-export async function getPool(){
-	if (pool) return pool;
-
-  console.log('Creating DB pool...')
-  try{
-    pool = await createPool(DB_URL, {
-      ssl: {
-        ca: CA_CERT
-      },
-    })
-    console.log('DB pool created')
-  }catch(e){
-    console.log('Error creating DB pool: ', JSON.stringify(e))
-  }
-
-	return pool;
-}

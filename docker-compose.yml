@@ -6,8 +6,11 @@ services:
       - "3000:3000"
     environment:
       NODE_ENV: development
+      ROARR_LOG: true
+    restart: unless-stopped
     volumes:
       - .:/usr/src/app
+    
 
   db:
     image: postgres:16
