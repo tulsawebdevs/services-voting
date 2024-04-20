@@ -6,8 +6,8 @@ const Proposal = z.object({
 	type: z.enum(['topic', 'project']),
 	status: z.enum(['draft', 'rfc', 'open', 'closed']),
 	id: z.number().int().positive(),
-	created: z.date(),
-	updated: z.date().optional(),
+	created: z.number().transform(val => new Date(val)),
+	updated: z.number().transform(val => new Date(val)).optional(),
 })
 
 type Proposal = z.infer<typeof Proposal>
