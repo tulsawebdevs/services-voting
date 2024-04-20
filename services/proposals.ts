@@ -2,7 +2,7 @@ import { getPool } from '../database';
 import { SchemaValidationError, sql } from 'slonik';
 import { Proposal, PendingProposal } from '../types/proposal';
 
-async function index() {
+async function index(): Promise<readonly Proposal[]> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const rows = await connection.any(
@@ -13,7 +13,7 @@ async function index() {
 	});
 }
 
-async function store(data: PendingProposal) {
+async function store(data: PendingProposal): Promise<Proposal> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const proposal = await connection.one(sql.type(Proposal)`

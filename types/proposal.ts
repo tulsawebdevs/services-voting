@@ -1,8 +1,8 @@
 import { z } from 'zod'
 const Proposal = z.object({
-	title: z.string().min(10).max(100),
+	title: z.string().min(1).max(100),
 	summary: z.string().min(10).max(255),
-	description: z.string().min(1).max(1000),
+	description: z.string().min(10).max(1000),
 	type: z.enum(['topic', 'project']),
 	status: z.enum(['draft', 'rfc', 'open', 'closed']),
 	id: z.number().int().positive(),
