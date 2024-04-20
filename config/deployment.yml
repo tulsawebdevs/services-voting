@@ -30,3 +30,8 @@ spec:
             secretKeyRef:
               name: proposals-db-url
               key: connection_string
+        - name: CA_CERT
+          valueFrom:
+            secretKeyRef:
+              name: proposals-db-ca-cert
+              key: ca-certificate

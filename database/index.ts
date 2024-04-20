@@ -7,6 +7,7 @@ import {
 } from 'slonik';
 
 const DB_URL = process.env.DB_URL || 'postgres://postgres:postgres@db:5432/postgres';
+const CA_CERT = process.env.CA_CERT
 let pool: DatabasePool;
 
 const createResultParserInterceptor = (): Interceptor => {
@@ -42,7 +43,11 @@ export async function getPool(){
 
   console.log('Creating DB pool...')
   try{
-    pool = await createPool(DB_URL)
+    pool = await createPool(DB_URL, {
+      ssl: {
+        ca: CA_CERT
+      },
+    })
     console.log('DB pool created')
   }catch(e){
     console.log('Error creating DB pool: ', JSON.stringify(e))
