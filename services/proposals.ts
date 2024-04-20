@@ -20,6 +20,8 @@ async function store(data: PendingProposal) {
 		INSERT INTO proposals (title, summary, description, type) 
 		VALUES (${data.title}, ${data.summary}, ${data.description}, ${data.type}) 
 		RETURNING *;`)
+
+		return proposal;
 	});
 }
 

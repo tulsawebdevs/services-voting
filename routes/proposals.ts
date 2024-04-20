@@ -2,6 +2,8 @@ import express from 'express';
 import ProposalsService from '../services/proposals';
 import { SchemaValidationError } from 'slonik';
 import { formatQueryErrorResponse } from '../helpers';
+import z from 'zod';
+import { PendingProposal, Proposal } from '../types/proposal';
 
 const router = express.Router();
 
@@ -19,8 +21,20 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", (req, res) => {
-  res.status(201).json({ message: "Proposal created" });
+router.post("/", async (req, res) => {
+  const data = req.body;
+  const validationResult = PendingProposal.safeParse(data);
+  if(!validationResult.success){
+    return res.status(422).json({message: 'Invalid data', error: validationResult.error})
+  }
+
+  try{
+    const proposal = await ProposalsService.store(data);
+    console.log("Created Proposal", JSON.stringify(proposal));
+    return res.status(201).json({ success: true, proposal: JSON.stringify(proposal)});
+  }catch(e){
+    return res.status(500).json({message: 'Server Error'})
+  }
 });
 
 router.get("/:id", (req, res) => {
