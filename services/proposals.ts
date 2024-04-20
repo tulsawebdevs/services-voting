@@ -1,5 +1,5 @@
 import { getPool } from '../database';
-import { sql } from 'slonik';
+import { SchemaValidationError, sql } from 'slonik';
 import { Proposal, PendingProposal } from '../types/proposal';
 
 async function index() {

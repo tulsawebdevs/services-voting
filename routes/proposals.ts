@@ -1,11 +1,22 @@
 import express from 'express';
 import ProposalsService from '../services/proposals';
+import { SchemaValidationError } from 'slonik';
+import { formatQueryErrorResponse } from '../helpers';
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
-  const proposals = await ProposalsService.index();
-  res.status(200).json(proposals);
+  try{
+    const proposals = await ProposalsService.index();
+    return res.status(200).json(proposals);
+  }catch(e){
+    if (e instanceof SchemaValidationError) {
+      return res.status(400)
+        .json({message: 'Error fetching proposals: ' + formatQueryErrorResponse(e)})
+    }
+
+    return res.status(500).json({message: 'Server Error'})
+  }
 });
 
 router.post("/", (req, res) => {
