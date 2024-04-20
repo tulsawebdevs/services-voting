@@ -2,8 +2,7 @@ import express from 'express';
 import ProposalsService from '../services/proposals';
 import { SchemaValidationError } from 'slonik';
 import { formatQueryErrorResponse } from '../helpers';
-import z from 'zod';
-import { PendingProposal, Proposal } from '../types/proposal';
+import { PendingProposal } from '../types/proposal';
 
 const router = express.Router();
 
