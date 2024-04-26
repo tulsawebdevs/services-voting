@@ -4,11 +4,7 @@ import TopicsRouter from "./routes/topics";
 import cors from 'cors';
 const app = express();
 
-const corsOptions = {
-  origin: ['https://tulsawebdevs.org', 'https://www.tulsawebdevs.org']
-}
-
-app.use(cors(corsOptions))
+app.use(cors())
 app.use(express.json());
 
 app.use("/proposals", ProposalsRouter);
