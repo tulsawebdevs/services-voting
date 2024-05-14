@@ -21,25 +21,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-/*
-TEST DRAFT
- */
-
-//   res.status(200).json({
-//     list: [
-//       {
-//         title: "Test Draft",
-//         summary: "This is a test draft",
-//         description: "A draft for testing",
-//         type: "Topic",
-//         id: "1",
-//         created: "2024-05-12T21:40:26.157Z",
-//         updated: "2024-05-12T21:40:26.157Z",
-//       },
-//     ],
-//   });
-// });
-
 router.post("/", async (req, res) => {
   const data = req.body;
   const validationResult = PendingDraft.safeParse(data);
