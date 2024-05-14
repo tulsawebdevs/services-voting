@@ -20,12 +20,7 @@ const PendingDraft = z.object({
 
 type PendingDraft = z.infer<typeof PendingDraft>
 
-const DraftUpdate = PendingDraft.partial({
-	title: true,
-	summary: true,
-	description: true,
-	type: true,
-})
+const DraftUpdate = PendingDraft.partial()
 
 type DraftUpdate = z.infer<typeof DraftUpdate>
 
