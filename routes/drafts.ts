@@ -14,6 +14,10 @@ interface IndexQueryParams  {
   limit?: number
 }
 
+interface ActionQueryParams {
+  recordId: Draft["id"]
+}
+
 router.get("/", async (req, res) => {
   const { recordId } = req.query as unknown as IndexQueryParams;
   try {
@@ -52,7 +56,7 @@ router.post("/", async (req, res) => {
 });
 
 router.put("/", async (req, res) => {
-  const { recordId } = req.query;
+  const { recordId } = req.query as unknown as ActionQueryParams;
   const data = req.body;
   const validationResult = PendingDraft.safeParse(data);
   if(!validationResult.success){
@@ -60,7 +64,7 @@ router.put("/", async (req, res) => {
   }
 
   try{
-    const result = await DraftsService.update(recordId as string, validationResult.data);
+    const result = await DraftsService.update(recordId, validationResult.data);
     res.status(200).json(result);
   }catch(e){
     console.log(e)
@@ -69,7 +73,7 @@ router.put("/", async (req, res) => {
 });
 
 router.patch("/", async (req, res) => {
-  const { recordId } = req.query;
+  const { recordId } = req.query as unknown as ActionQueryParams;
   const data = req.body;
   const validationResult = DraftUpdate.safeParse(data);
   if(!validationResult.success){
@@ -77,7 +81,7 @@ router.patch("/", async (req, res) => {
   }
 
   try{
-    const result = await DraftsService.update(recordId as string, validationResult.data);
+    const result = await DraftsService.update(recordId, validationResult.data);
     res.status(200).json(result);
   }catch(e){
     console.log(e)
@@ -86,9 +90,9 @@ router.patch("/", async (req, res) => {
 });
 
 router.delete("/", async (req, res) => {
-  const { recordId } = req.query;
+  const { recordId } = req.query as unknown as ActionQueryParams;
   try {
-    const result = await DraftsService.destroy(recordId as string);
+    const result = await DraftsService.destroy(recordId);
     return res.status(200).json({count: result.rowCount, rows:result.rows}); 
   }catch(e){
     console.log(e)

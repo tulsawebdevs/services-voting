@@ -37,19 +37,19 @@ async function show(id: number): Promise<Draft> {
 	});
 }
 
-async function update(id: string, data: DraftUpdate) {
+async function update(id: number, data: DraftUpdate) {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		return await slonikUpdate(
 			connection, 
 			'drafts',
-			data, 
-			{id: parseInt(id)}
+			data,
+			{id}
 		)
 	});
 }
 
-async function destroy(id: string) {
+async function destroy(id: number) {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		return await connection.query(sql.unsafe`
