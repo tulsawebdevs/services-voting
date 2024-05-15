@@ -3,14 +3,22 @@ import DraftsService from '../services/drafts';
 import { SchemaValidationError } from 'slonik';
 import { formatQueryErrorResponse } from '../helpers';
 import { PendingDraft, DraftUpdate } from '../types/draft';
+import type { Draft } from '../types/draft';
 
 const router = express.Router();
 
+interface IndexQueryParams  {
+  recordId?: Draft["id"]
+  type?: Draft["type"]
+  cursor?: number
+  limit?: number
+}
+
 router.get("/", async (req, res) => {
-  const { recordId } = req.query;
+  const { recordId } = req.query as unknown as IndexQueryParams;
   try {
     if (recordId) {
-      const draft = await DraftsService.show(recordId as string);
+      const draft = await DraftsService.show(recordId);
       return res.status(200).json(draft);
     } else {
       const drafts = await DraftsService.index();

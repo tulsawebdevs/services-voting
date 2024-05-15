@@ -26,7 +26,7 @@ async function store(data: PendingDraft): Promise<Draft> {
 	});
 }
 
-async function show(id: string): Promise<Draft> {
+async function show(id: number): Promise<Draft> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const draft = await connection.maybeOne(sql.type(Draft)`
