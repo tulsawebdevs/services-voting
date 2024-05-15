@@ -9,3 +9,25 @@ describe('test suite works', () => {
     // expect(data).toEqual({ message: "Paginated list of proposals" });
   });
 })
+
+
+
+/*
+TEST DRAFT
+ */
+
+//   res.status(200).json({
+//     list: [
+//       {
+//         title: "Test Draft",
+//         summary: "This is a test draft",
+//         description: "A draft for testing",
+//         type: "Topic",
+//         id: "1",
+//         created: "2024-05-12T21:40:26.157Z",
+//         updated: "2024-05-12T21:40:26.157Z",
+//       },
+//     ],
+//   });
+// });
+

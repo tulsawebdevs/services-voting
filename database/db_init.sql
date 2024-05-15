@@ -41,3 +41,21 @@ CREATE OR REPLACE TRIGGER set_updated
 BEFORE UPDATE ON votes
 FOR EACH ROW
 EXECUTE PROCEDURE trigger_set_updated();
+
+/*
+SETUP DRAFTS TABLE
+*/
+CREATE TABLE if NOT EXISTS drafts (
+     title varchar(100) DEFAULT '' NOT NULL,
+     summary TEXT DEFAULT '' NOT NULL,
+     description TEXT DEFAULT '' NOT NULL,
+     type varchar(32) DEFAULT '' NOT NULL,
+     id SERIAL PRIMARY KEY,
+     created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+     updated TIMESTAMP
+);
+
+CREATE OR REPLACE TRIGGER set_updated
+BEFORE UPDATE ON drafts
+FOR EACH ROW
+EXECUTE PROCEDURE trigger_set_updated();
