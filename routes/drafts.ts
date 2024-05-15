@@ -7,9 +7,15 @@ import { PendingDraft, DraftUpdate } from '../types/draft';
 const router = express.Router();
 
 router.get("/", async (req, res) => {
-  try{
-    const drafts = await DraftsService.index();
-    return res.status(200).json(drafts);
+  const { recordId } = req.query;
+  try {
+    if (recordId) {
+      const draft = await DraftsService.show(recordId as string);
+      return res.status(200).json(draft);
+    } else {
+      const drafts = await DraftsService.index();
+      return res.status(200).json(drafts);
+    }
   }catch(e){
     if (e instanceof SchemaValidationError) {
       return res.status(400)
@@ -37,27 +43,16 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
-  let { id } = req.params;
-  try{
-    const draft = await DraftsService.show(id);
-    return res.status(200).json(draft);
-  }catch(e){
-    console.log(e)
-    return res.status(500).json({message: 'Server Error'})
-  }
-});
-
-router.put("/:id", async (req, res) => {
-  const { id } = req.params;
+router.put("/", async (req, res) => {
+  const { recordId } = req.query;
   const data = req.body;
-  const validationResult = DraftUpdate.safeParse(data);
+  const validationResult = PendingDraft.safeParse(data);
   if(!validationResult.success){
     return res.status(422).json({message: 'Invalid data', error: validationResult.error})
   }
 
   try{
-    const result = await DraftsService.update(id, validationResult.data);
+    const result = await DraftsService.update(recordId as string, validationResult.data);
     res.status(200).json(result);
   }catch(e){
     console.log(e)
@@ -65,10 +60,27 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
-  const { id } = req.params;
+router.patch("/", async (req, res) => {
+  const { recordId } = req.query;
+  const data = req.body;
+  const validationResult = DraftUpdate.safeParse(data);
+  if(!validationResult.success){
+    return res.status(422).json({message: 'Invalid data', error: validationResult.error})
+  }
+
+  try{
+    const result = await DraftsService.update(recordId as string, validationResult.data);
+    res.status(200).json(result);
+  }catch(e){
+    console.log(e)
+    return res.status(500).json({message: 'Server Error'})
+  }
+});
+
+router.delete("/", async (req, res) => {
+  const { recordId } = req.query;
   try {
-    const result = await DraftsService.destroy(id);
+    const result = await DraftsService.destroy(recordId as string);
     return res.status(200).json({count: result.rowCount, rows:result.rows}); 
   }catch(e){
     console.log(e)
