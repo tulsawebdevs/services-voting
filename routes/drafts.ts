@@ -44,7 +44,7 @@ router.post("/", async (req, res) => {
 
   try{
     const draft = await DraftsService.store(data);
-    return res.status(201).json({ success: true, draft: JSON.stringify(draft)});
+    return res.status(201).json(draft);
   }catch(e){
     console.log(e)
     return res.status(500).json({message: 'Server Error'})
