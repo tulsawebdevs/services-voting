@@ -14,6 +14,17 @@ async function index(): Promise<readonly Draft[]> {
 	});
 }
 
+async function indexByType(type: string): Promise<readonly Draft[]> {
+	const pool = await getPool();
+	return await pool.connect(async (connection) => {
+		const rows = await connection.any(
+			sql.type(Draft)`
+		SELECT * FROM drafts WHERE type = ${type} ORDER BY id;`)
+
+		return rows;
+	});
+}
+
 async function store(data: PendingDraft): Promise<Draft> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
@@ -60,6 +71,7 @@ async function destroy(id: number) {
 
 export default {
 	index,
+	indexByType,
 	store,
 	show,
 	update,

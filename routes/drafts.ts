@@ -20,9 +20,14 @@ interface ActionQueryParams {
 
 router.get("/", async (req, res) => {
   const { recordId } = req.query as unknown as IndexQueryParams;
+  const { type } = req.query as unknown as IndexQueryParams;
   try {
     if (recordId) {
       const draft = await DraftsService.show(recordId);
+      return res.status(200).json(draft);
+    }
+    if (type) {
+      const draft = await DraftsService.indexByType(type);
       return res.status(200).json(draft);
     } else {
       const drafts = await DraftsService.index();
