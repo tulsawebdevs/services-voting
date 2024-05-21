@@ -3,23 +3,14 @@ import { sql} from 'slonik';
 import {update as slonikUpdate} from 'slonik-utilities';
 import { Draft, PendingDraft, DraftUpdate } from '../types/draft';
 
-async function index(): Promise<readonly Draft[]> {
+async function index(type?: string, cursor?: number, limit?: number): Promise<readonly Draft[]> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const rows = await connection.any(
 		sql.type(Draft)`
-		SELECT * FROM drafts ORDER BY id;`)
-
-		return rows;
-	});
-}
-
-async function indexByType(type: string): Promise<readonly Draft[]> {
-	const pool = await getPool();
-	return await pool.connect(async (connection) => {
-		const rows = await connection.any(
-			sql.type(Draft)`
-		SELECT * FROM drafts WHERE type = ${type} ORDER BY id;`)
+		SELECT * FROM drafts
+	    ${type ? sql.fragment`WHERE type = ${type}` : sql.fragment``} 
+        ORDER BY id OFFSET ${cursor ?? null} LIMIT ${limit ?? null};`)
 
 		return rows;
 	});
@@ -71,7 +62,6 @@ async function destroy(id: number) {
 
 export default {
 	index,
-	indexByType,
 	store,
 	show,
 	update,
