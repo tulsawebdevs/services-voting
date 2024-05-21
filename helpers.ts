@@ -27,7 +27,6 @@ export function validateRequest<T extends AnyZodObject>(schema: T) {
 			req.validated = result
 			next();
 		} catch (error) {
-			console.log("Look here")
 			if (error instanceof ZodError) {
 				const formattedError = _formatZodError(error)
 				return badRequest(formattedError, res)
