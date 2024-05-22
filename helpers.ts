@@ -5,7 +5,7 @@ import {Request, Response, NextFunction} from "express";
 declare global {
 	namespace Express {
 		interface Request {
-			validated?: any;
+			validated?: { body?: object, query?: object, params?: object }
 		}
 	}
 }
@@ -38,6 +38,10 @@ export function validateRequest<T extends AnyZodObject>(schema: T) {
 
 export function badRequest(message: string, res: Response){
 	return res.status(422).json({ message });
+}
+
+export function isRequestValidated(req: Request): req is Request & { validated: { body?: object, query?: object, params?: object } } {
+	return req.validated !== undefined;
 }
 
 function _formatZodError(error: ZodError): string {
