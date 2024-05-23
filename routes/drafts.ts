@@ -1,16 +1,15 @@
 import express from "express";
 import DraftsService from '../services/drafts';
 import { SchemaValidationError } from 'slonik';
-import { formatQueryErrorResponse, validateRequest, isRequestValidated } from '../helpers';
+import { formatQueryErrorResponse, validateRequest } from '../helpers';
 import { PendingDraft, DraftUpdate } from '../types/draft';
 import { z } from "zod";
 
 const router = express.Router();
 
-/*
-Request Validators
+/**
+ * Request Validators 
  */
-
 const IndexRequest = z.object(  {
   query:z.object( {
     recordId: z.coerce.number().optional(),
@@ -19,10 +18,12 @@ const IndexRequest = z.object(  {
     limit: z.coerce.number().optional()
   })
 })
+type IndexQuery = z.infer<typeof IndexRequest>['query'];
 
 const RecordRequest = z.object(  {
   recordId: z.coerce.number()
 })
+type RecordQuery = z.infer<typeof RecordRequest>
 
 const PostRequest = z.object({
   body: PendingDraft
@@ -43,13 +44,13 @@ const DeleteRequest = z.object({
 });
 
 router.get("/", validateRequest(IndexRequest), async (req, res) => {
-  if (!isRequestValidated(req)) return res.status(400).json({ message: "Validation failed" });
   const {
     recordId,
     type,
     cursor,
     limit
-  } = req.validated.query as z.infer<typeof IndexRequest>['query'];
+  } = req.validated.query as IndexQuery;
+
   try {
     if (recordId) {
       const draft = await DraftsService.show(recordId);
@@ -74,8 +75,7 @@ router.get("/", validateRequest(IndexRequest), async (req, res) => {
 });
 
 router.post("/", validateRequest(PostRequest), async (req, res) => {
-  if (!isRequestValidated(req)) return res.status(400).json({ message: "Validation failed" });
-  const validationResult = req.validated.body as z.infer<typeof PostRequest>['body']
+  const validationResult = req.validated.body as PendingDraft
 
   try{
     const draft = await DraftsService.store(validationResult);
@@ -87,11 +87,9 @@ router.post("/", validateRequest(PostRequest), async (req, res) => {
 });
 
 router.put("/", validateRequest(PutRequest), async (req, res) => {
-  if (!isRequestValidated(req)) return res.status(400).json({ message: "Validation failed" });
-  const { recordId } = req.validated.query as z.infer<typeof PutRequest>['query'];
-  const validationResult = req.validated.body as z.infer<typeof PutRequest>['body'];
+  const { recordId } = req.validated.query as RecordQuery;
   try{
-    const result = await DraftsService.update(recordId, validationResult);
+    const result = await DraftsService.update(recordId, req.validated.body as PendingDraft);
     res.status(200).json(result);
   }catch(e){
     console.log(e)
@@ -100,9 +98,8 @@ router.put("/", validateRequest(PutRequest), async (req, res) => {
 });
 
 router.patch("/", validateRequest(PatchRequest), async (req, res) => {
-  if (!isRequestValidated(req)) return res.status(400).json({ message: "Validation failed" });
-  const { recordId } = req.validated.query as z.infer<typeof PatchRequest>['query'];
-  const validationResult = req.validated.body as z.infer<typeof PatchRequest>['body'];
+  const { recordId } = req.validated.query as RecordQuery;
+  const validationResult = req.validated.body as DraftUpdate;
   try{
     const result = await DraftsService.update(recordId, validationResult);
     res.status(200).json(result);
@@ -113,8 +110,7 @@ router.patch("/", validateRequest(PatchRequest), async (req, res) => {
 });
 
 router.delete("/", validateRequest(DeleteRequest), async (req, res) => {
-  if (!isRequestValidated(req)) return res.status(400).json({ message: "Validation failed" });
-  const { recordId } = req.validated.query as z.infer<typeof DeleteRequest>['query'];
+  const { recordId } = req.validated.query as RecordQuery
   try {
     const result = await DraftsService.destroy(recordId);
     return res.status(200).json({count: result.rowCount, rows:result.rows});
