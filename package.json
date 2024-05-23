@@ -4,7 +4,7 @@
   "description": "A microservice backend for tracking proposed meetup topics and civic projects and voting on them",
   "main": "server.js",
   "scripts": {
-    "start": "node_modules/.bin/nodemon server.js",
+    "start": "node_modules/.bin/nodemon server.ts",
     "test": "vitest watch",
     "test:run": "vitest run"
   },
