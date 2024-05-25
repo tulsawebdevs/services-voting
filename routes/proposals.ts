@@ -3,8 +3,11 @@ import ProposalsService from '../services/proposals';
 import { SchemaValidationError } from 'slonik';
 import { formatQueryErrorResponse } from '../helpers';
 import { PendingProposal, ProposalUpdate } from '../types/proposal';
+import VotesRouter from "./votes"
 
 const router = express.Router();
+
+router.use("/votes", VotesRouter)
 
 router.get("/", async (req, res) => {
   try{

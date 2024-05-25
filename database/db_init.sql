@@ -1,3 +1,7 @@
+DROP TABLE IF EXISTS votes CASCADE;
+DROP TABLE IF EXISTS proposals CASCADE;
+DROP TABLE IF EXISTS drafts CASCADE;
+
 CREATE OR REPLACE FUNCTION trigger_set_updated() RETURNS TRIGGER AS $$
 BEGIN
 	NEW.updated = NOW();
@@ -10,10 +14,11 @@ SETUP PROPOSALS TABLE
 */
 CREATE TABLE if NOT EXISTS proposals (
 	title varchar(100) NOT NULL,
+    author_name TEXT NOT NULL,
 	summary TEXT NOT NULL,
-	description TEXT NOT NULL,
+	description TEXT DEFAULT '' NOT NULL,
 	type varchar(32) NOT NULL,
-	status varchar(32) DEFAULT 'draft' NOT NULL,
+	status varchar(32) DEFAULT 'open' NOT NULL,
 	id SERIAL PRIMARY KEY,
 	created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	updated TIMESTAMP
@@ -31,10 +36,12 @@ SETUP VOTING TABLE
 CREATE TABLE if NOT EXISTS votes (
 	voter_email TEXT NOT NULL,
 	proposal_id INT NOT NULL REFERENCES proposals(id),
-	vote INT NOT NULL,
+	vote varchar(32) NOT NULL,
+    comment TEXT DEFAULT '' NOT NULL ,
 	created TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	updated TIMESTAMP,
-	id SERIAL PRIMARY KEY
+	id SERIAL PRIMARY KEY,
+    CONSTRAINT unique_vote UNIQUE (voter_email, proposal_id)
 );
 
 CREATE OR REPLACE TRIGGER set_updated
