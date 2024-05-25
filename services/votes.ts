@@ -13,18 +13,18 @@ async function store(data: PendingVote, proposalId: number, email: string): Prom
             DO UPDATE SET
 				vote = EXCLUDED.vote,
 				comment = EXCLUDED.comment
-			RETURNING *;`);
+			RETURNING vote, comment, id, created, updated;`);
 		return newVote;
 	});
 }
 
 
-async function destroy(id: number) {
+async function destroy(proposalId: number, email: string) {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		return await connection.query(sql.unsafe`
-			DELETE FROM votes WHERE id = ${id} RETURNING id, title;
-		`)
+			DELETE FROM votes 
+			WHERE proposal_id = ${proposalId} AND voter_email = ${email};`)
 	});
 }
 
