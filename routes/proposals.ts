@@ -1,18 +1,59 @@
 import express from 'express';
 import ProposalsService from '../services/proposals';
 import { SchemaValidationError } from 'slonik';
-import { formatQueryErrorResponse } from '../helpers';
-import { PendingProposal, ProposalUpdate } from '../types/proposal';
-import VotesRouter from "./votes"
+import { formatQueryErrorResponse, validateRequest } from '../helpers';
+import { PendingProposal } from '../types/proposal';
+import VotesRouter from "./votes";
+import { z } from "zod";
 
 const router = express.Router();
 
 router.use("/votes", VotesRouter)
 
-router.get("/", async (req, res) => {
+/**
+ * Request Validators
+ */
+const IndexRequest = z.object(  {
+  query:z.object( {
+    recordId: z.coerce.number().optional(),
+    type: z.enum(["topic", "project"]).optional(),
+    status: z.enum(["open", "closed"]).optional(),
+    cursor: z.coerce.number().optional(),
+    limit: z.coerce.number().optional()
+  })
+})
+type IndexQuery = z.infer<typeof IndexRequest>['query'];
+
+const PostRequest = z.object({
+  body: PendingProposal
+});
+
+const tempAuthor : string = "John Doe"
+const tempEmail : string = "johndoe@email.com"
+
+router.get("/", validateRequest(IndexRequest), async (req, res) => {
+  const {
+    recordId,
+    type,
+    status,
+    cursor,
+    limit
+  } = req.validated.query as IndexQuery;
   try{
-    const proposals = await ProposalsService.index();
-    return res.status(200).json(proposals);
+    if (recordId) {
+      const proposal = await ProposalsService.show(recordId);
+      return res.status(200).json(proposal);
+    } else {
+      const proposals = await ProposalsService.index(type, status, cursor, limit);
+      if (proposals.length === 0) {
+        return res.status(404).json({ message: 'No proposals found' });
+      }
+      const response = {
+        limit: limit || proposals.length,
+        proposals: proposals
+      }
+      return res.status(200).json(response);
+    }
   }catch(e){
     if (e instanceof SchemaValidationError) {
       return res.status(400)
@@ -24,55 +65,12 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
-  const data = req.body;
-  const validationResult = PendingProposal.safeParse(data);
-  if(!validationResult.success){
-    return res.status(422).json({message: 'Invalid data', error: validationResult.error})
-  }
+router.post("/", validateRequest(PostRequest), async (req, res) => {
+  const validationResult = req.validated.body as PendingProposal
 
   try{
-    const proposal = await ProposalsService.store(data);
-    return res.status(201).json({ success: true, proposal: JSON.stringify(proposal)});
-  }catch(e){
-    console.log(e)
-    return res.status(500).json({message: 'Server Error'})
-  }
-});
-
-router.get("/:id", async (req, res) => {
-  let { id } = req.params;
-  try{
-    const proposal = await ProposalsService.show(id);
-    return res.status(200).json(proposal);
-  }catch(e){
-    console.log(e)
-    return res.status(500).json({message: 'Server Error'})
-  }
-});
-
-router.put("/:id", async (req, res) => {
-  const { id } = req.params;
-  const data = req.body;
-  const validationResult = ProposalUpdate.safeParse(data);
-  if(!validationResult.success){
-    return res.status(422).json({message: 'Invalid data', error: validationResult.error})
-  }
-
-  try{
-    const result = await ProposalsService.update(id, validationResult.data);
-    res.status(200).json(result);
-  }catch(e){
-    console.log(e)
-    return res.status(500).json({message: 'Server Error'})
-  }
-});
-
-router.delete("/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    const result = await ProposalsService.destroy(id);
-    return res.status(200).json({count: result.rowCount, rows:result.rows}); 
+    const draft = await ProposalsService.store(validationResult, tempAuthor, tempEmail);
+    return res.status(201).json(draft);
   }catch(e){
     console.log(e)
     return res.status(500).json({message: 'Server Error'})

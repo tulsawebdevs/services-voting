@@ -1,32 +1,74 @@
 import { getPool } from '../database';
 import { sql} from 'slonik';
 import {update as slonikUpdate} from 'slonik-utilities';
-import { Proposal, PendingProposal, ProposalUpdate } from '../types/proposal';
+import { Proposal, ProposalState, PendingProposal, ProposalUpdate } from '../types/proposal';
 
-async function index(): Promise<readonly Proposal[]> {
+async function index(
+	type?: string,
+	status?: string,
+	cursor?: number,
+	limit?: number
+): Promise<readonly ProposalState[]> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
-		const rows = await connection.any(
-		sql.type(Proposal)`
-		SELECT * FROM proposals ORDER BY id;`)
+		const whereType = type ? sql.fragment`
+			WHERE p.type = ${type}` : sql.fragment``;
 
-		return rows;
+		const whereStatus = status ? sql.fragment`
+			${type ? sql.fragment`AND` : sql.fragment`WHERE`} 
+			p.status = ${status}` : sql.fragment``;
+
+		const userVote = sql.fragment`
+			CASE
+				WHEN uv.vote IS NOT NULL 
+				THEN json_build_object('value', uv.vote, 'comment', uv.comment)
+				ELSE NULL
+			END AS "userVote"`;
+
+		const results = sql.fragment`
+			json_agg(
+					json_build_object('value', v.vote, 'comment', v.comment)
+				) FILTER (WHERE v.vote IS NOT NULL) as results`;
+
+		const rows = await connection.any(sql.type(ProposalState)`
+        SELECT 
+            p.id, p.created, p.updated, p.title, p.summary, p.description, p.type,
+			p.status, p.author_name AS "authorName", ${userVote}, ${results}
+        FROM proposals AS p
+        LEFT JOIN votes AS uv ON uv.proposal_id = p.id AND uv.voter_email = p.voter_email
+        LEFT JOIN votes AS v ON v.proposal_id = p.id
+        ${whereType}
+        ${whereStatus}
+        GROUP BY p.id, uv.vote, uv.comment
+        ORDER BY p.id 
+        OFFSET ${cursor ?? null} 
+        LIMIT ${limit ?? null};`);
+
+		const filteredRows = rows.map(row => {
+			if (row.status === 'open') {
+				const { results, ...rest } = row;
+				return rest;
+			}
+			return row;
+		});
+
+		return filteredRows;
 	});
 }
 
-async function store(data: PendingProposal): Promise<Proposal> {
+async function store(data: PendingProposal, author: string, email: string): Promise<Proposal> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const proposal = await connection.one(sql.type(Proposal)`
-		INSERT INTO proposals (title, summary, description, type) 
-		VALUES (${data.title}, ${data.summary}, ${data.description}, ${data.type}) 
-		RETURNING *;`)
+		INSERT INTO proposals (title, summary, description, type, author_name, voter_email) 
+		VALUES (${data.title}, ${data.summary}, ${data.description}, ${data.type}, ${author}, ${email}) 
+		RETURNING author_name AS "authorName", status, title, summary, description, type, id, created, updated;`)
 
 		return proposal;
 	});
 }
 
-async function show(id: string): Promise<Proposal> {
+async function show(id: number): Promise<Proposal> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const proposal = await connection.maybeOne(sql.type(Proposal)`
@@ -37,14 +79,14 @@ async function show(id: string): Promise<Proposal> {
 	});
 }
 
-async function update(id: string, data: ProposalUpdate) {
+async function update(id: number, data: ProposalUpdate) {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		return await slonikUpdate(
 			connection, 
 			'proposals', 
 			data, 
-			{id: parseInt(id)}
+			{id}
 		)
 
 		/* 
@@ -61,7 +103,7 @@ async function update(id: string, data: ProposalUpdate) {
 	});
 }
 
-async function destroy(id: string) {
+async function destroy(id: number) {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		return await connection.query(sql.unsafe`

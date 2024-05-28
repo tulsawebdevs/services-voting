@@ -1,7 +1,3 @@
-DROP TABLE IF EXISTS votes CASCADE;
-DROP TABLE IF EXISTS proposals CASCADE;
-DROP TABLE IF EXISTS drafts CASCADE;
-
 CREATE OR REPLACE FUNCTION trigger_set_updated() RETURNS TRIGGER AS $$
 BEGIN
 	NEW.updated = NOW();
@@ -15,6 +11,7 @@ SETUP PROPOSALS TABLE
 CREATE TABLE if NOT EXISTS proposals (
 	title varchar(100) NOT NULL,
     author_name TEXT NOT NULL,
+    voter_email TEXT NOT NULL,
 	summary TEXT NOT NULL,
 	description TEXT DEFAULT '' NOT NULL,
 	type varchar(32) NOT NULL,

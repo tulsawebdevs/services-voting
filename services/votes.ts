@@ -5,7 +5,6 @@ import { Vote, PendingVote } from '../types/vote';
 async function store(data: PendingVote, proposalId: number, email: string): Promise<Vote> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
-		console.log("data.value: ", data.value)
 		const newVote = await connection.one(sql.type(Vote)`
 			INSERT INTO votes (voter_email, proposal_id, vote, comment)
 			VALUES (${email}, ${proposalId}, ${data.value}, ${data.comment})
@@ -13,7 +12,7 @@ async function store(data: PendingVote, proposalId: number, email: string): Prom
             DO UPDATE SET
 				vote = EXCLUDED.vote,
 				comment = EXCLUDED.comment
-			RETURNING vote, comment, id, created, updated;`);
+			RETURNING vote AS value, comment, id, created, updated;`);
 		return newVote;
 	});
 }
@@ -22,9 +21,10 @@ async function store(data: PendingVote, proposalId: number, email: string): Prom
 async function destroy(proposalId: number, email: string) {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
-		return await connection.query(sql.unsafe`
+		const result = await connection.query(sql.unsafe`
 			DELETE FROM votes 
 			WHERE proposal_id = ${proposalId} AND voter_email = ${email};`)
+		return result.rowCount;
 	});
 }
 

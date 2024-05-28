@@ -43,7 +43,10 @@ router.post("/", validateRequest(PostRequest), async (req, res) => {
 router.delete("/", validateRequest(DeleteRequest), async (req, res) => {
   const { recordId } = req.validated.query as RecordQuery
   try {
-    await VotesService.destroy(recordId, tempEmail);
+    const rowCount = await VotesService.destroy(recordId, tempEmail);
+    if (rowCount === 0) {
+      return res.status(404).json({message: 'Vote not found'})
+    }
     return res.status(204).end();
   }catch(e){
     console.log(e)
