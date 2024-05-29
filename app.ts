@@ -1,7 +1,7 @@
 import express from "express";
 import ProposalsRouter from "./routes/proposals";
 import TopicsRouter from "./routes/topics";
-import DraftsRouter from "./routes/drafts"
+import DraftsRouter from "./routes/drafts";
 import cors from 'cors';
 const app = express();
 
