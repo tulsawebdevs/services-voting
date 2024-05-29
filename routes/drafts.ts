@@ -57,6 +57,9 @@ router.get("/", validateRequest(IndexRequest), async (req, res) => {
       return res.status(200).json(draft);
     } else {
       const drafts = await DraftsService.index(type, cursor, limit);
+      if (drafts.length === 0) {
+        return res.status(404).json({ message: 'No drafts found' });
+      }
       const response = {
         limit: limit || drafts.length,
         drafts: drafts
@@ -90,7 +93,10 @@ router.put("/", validateRequest(PutRequest), async (req, res) => {
   const { recordId } = req.validated.query as RecordQuery;
   try{
     const result = await DraftsService.update(recordId, req.validated.body as PendingDraft);
-    res.status(200).json(result);
+    if (result.rowCount === 0) {
+      return res.status(404).json({message: 'Draft not found'})
+    }
+    res.status(200).json(await DraftsService.show(recordId));
   }catch(e){
     console.log(e)
     return res.status(500).json({message: 'Server Error'})
@@ -102,7 +108,10 @@ router.patch("/", validateRequest(PatchRequest), async (req, res) => {
   const validationResult = req.validated.body as DraftUpdate;
   try{
     const result = await DraftsService.update(recordId, validationResult);
-    res.status(200).json(result);
+    if (result.rowCount === 0) {
+      return res.status(404).json({message: 'Draft not found'})
+    }
+    res.status(200).json(await DraftsService.show(recordId));
   }catch(e){
     console.log(e)
     return res.status(500).json({message: 'Server Error'})
@@ -113,7 +122,10 @@ router.delete("/", validateRequest(DeleteRequest), async (req, res) => {
   const { recordId } = req.validated.query as RecordQuery
   try {
     const result = await DraftsService.destroy(recordId);
-    return res.status(200).json({count: result.rowCount, rows:result.rows});
+    if (result.rowCount === 0) {
+      return res.status(404).json({message: 'Draft not found'})
+    }
+    return res.status(204).end();
   }catch(e){
     console.log(e)
     return res.status(500).json({message: 'Server Error'})
