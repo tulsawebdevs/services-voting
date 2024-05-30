@@ -33,7 +33,7 @@ SETUP VOTING TABLE
 CREATE TABLE if NOT EXISTS votes (
 	voter_email TEXT NOT NULL,
 	proposal_id INT NOT NULL REFERENCES proposals(id),
-	vote varchar(32) NOT NULL,
+	vote INT,
     comment TEXT DEFAULT '' NOT NULL ,
 	created TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	updated TIMESTAMPTZ,
