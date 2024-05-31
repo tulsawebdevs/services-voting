@@ -1,7 +1,9 @@
 import { expect, describe, it } from "vitest";
 import { TEST_SERVER_URL } from "./global.setup";
+import {resetDatabase} from "../database";
 
 describe('test suite works', () => {
+
   it("should hit health check", async () => {
     const res = await fetch(TEST_SERVER_URL);
     expect(res.status).toEqual(200);
@@ -10,9 +12,11 @@ describe('test suite works', () => {
 })
 
 describe('smoke tests', () => {
-  it('index route', async () => {
+  it('index route 404 on empty db', async () => {
+    await resetDatabase();
     const res = await fetch(`${TEST_SERVER_URL}/drafts`);
-    expect(res.status).toEqual(200);
+    const data = await res.json();
+    expect(res.status).toEqual(404);
   })
 
   it('store route', async () => {

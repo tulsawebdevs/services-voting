@@ -5,12 +5,13 @@
   "main": "server.js",
   "scripts": {
     "start": "node_modules/.bin/nodemon server.ts",
-    "test": "vitest watch",
+    "test": "dotenvx run -f .env.test -- vitest watch",
     "test:run": "vitest run"
   },
-  "author": "",
+  "author": "tulsawebdevs",
   "license": "ISC",
   "dependencies": {
+    "@dotenvx/dotenvx": "^0.44.1",
     "cors": "^2.8.5",
     "jsonwebtoken": "9.0.2",
     "dotenv": "^16.4.5",

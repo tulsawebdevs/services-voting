@@ -1,10 +1,12 @@
 import {it, describe, expect} from 'vitest';
 import { TEST_SERVER_URL } from "./global.setup";
+import { resetDatabase } from '../database';
 
 describe("Proposals API", () => {
-  it('index route', async () => {
+  it('returns 404 on no proposals', async () => {
+    await resetDatabase();
     const res = await fetch(`${TEST_SERVER_URL}/proposals`);
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(404);
   });
 
   it('store route', async() => {

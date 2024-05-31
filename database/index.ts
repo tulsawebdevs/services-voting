@@ -1,4 +1,4 @@
-import { DatabasePool, createTypeParserPreset } from 'slonik';
+import { DatabasePool, sql } from 'slonik';
 import { 
 	createPool, 
 } from 'slonik';
@@ -34,4 +34,17 @@ export async function getPool(){
   }
 
 	return pool;
+}
+
+export async function resetDatabase(){
+  const pool = await getPool();
+  await pool.connect(
+    async (connection) => await connection.query(sql.unsafe`TRUNCATE drafts CASCADE`)
+  )
+  await pool.connect(
+    async (connection) => await connection.query(sql.unsafe`TRUNCATE proposals CASCADE`)
+  )
+  await pool.connect(
+    async (connection) => await connection.query(sql.unsafe`TRUNCATE votes CASCADE`)
+  )
 }
