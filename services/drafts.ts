@@ -21,7 +21,7 @@ async function store(data: PendingDraft): Promise<Draft> {
 	return await pool.connect(async (connection) => {
 		const draft = await connection.one(sql.type(Draft)`
 		INSERT INTO drafts (title, summary, description, type) 
-		VALUES (${data.title}, ${data.summary}, ${data.description}, ${data.type}) 
+		VALUES (${data.title ?? null}, ${data.summary ?? null}, ${data.description ?? null}, ${data.type ?? null}) 
 		RETURNING *;`)
 
 		return draft;

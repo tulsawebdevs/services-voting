@@ -50,10 +50,10 @@ EXECUTE PROCEDURE trigger_set_updated();
 SETUP DRAFTS TABLE
 */
 CREATE TABLE if NOT EXISTS drafts (
-     title varchar(100) DEFAULT '' NOT NULL,
-     summary TEXT DEFAULT '' NOT NULL,
-     description TEXT DEFAULT '' NOT NULL,
-     type varchar(32) DEFAULT '' NOT NULL,
+     title varchar(48),
+     summary TEXT,
+     description TEXT,
+     type varchar(32),
      id SERIAL PRIMARY KEY,
      created TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
      updated TIMESTAMPTZ

@@ -2,7 +2,7 @@ import express from "express";
 import DraftsService from '../services/drafts';
 import { SchemaValidationError } from 'slonik';
 import { formatQueryErrorResponse, validateRequest } from '../helpers';
-import { PendingDraft, DraftUpdate } from '../types/draft';
+import {PendingDraft, DraftUpdate, Draft} from '../types/draft';
 import { z } from "zod";
 
 const router = express.Router();
@@ -81,7 +81,12 @@ router.post("/", validateRequest(PostRequest), async (req, res) => {
   const validationResult = req.validated.body as PendingDraft
 
   try{
-    const draft = await DraftsService.store(validationResult);
+    let draft = await DraftsService.store(validationResult);
+    draft = Object.fromEntries(
+        Object.entries(draft)
+            .filter(([_, v]) => v != null)
+    ) as Draft
+
     return res.status(201).json(draft);
   }catch(e){
     console.log(e)
