@@ -20,8 +20,10 @@ export function validateRequest<T extends AnyZodObject>(schema: T) {
 		} catch (error) {
 			if (error instanceof ZodError) {
 				const formattedError = _formatZodError(error)
+				console.log('ZodError', formattedError)
 				return badRequest(formattedError, res)
 			}
+			console.log('Other Validation Error', error)
 			return badRequest(JSON.stringify(error), res)
 		}
 	};
