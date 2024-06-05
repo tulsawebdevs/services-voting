@@ -28,9 +28,6 @@ const PostRequest = z.object({
   body: PendingProposal
 });
 
-const tempAuthor : string = "John Doe"
-const tempEmail : string = "johndoe@email.com"
-
 router.get("/", validateRequest(IndexRequest), async (req, res) => {
   const {
     recordId,
@@ -69,7 +66,7 @@ router.post("/", validateRequest(PostRequest), async (req, res) => {
   const validationResult = req.validated.body as PendingProposal
 
   try{
-    const draft = await ProposalsService.store(validationResult, tempAuthor, tempEmail);
+    const draft = await ProposalsService.store(validationResult, req.user.userFullName, req.user.userEmail);
     return res.status(201).json(draft);
   }catch(e){
     console.log(e)

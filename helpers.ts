@@ -1,19 +1,10 @@
 import { SchemaValidationError } from "slonik";
-import {AnyZodObject, z, ZodError} from "zod";
+import {AnyZodObject, ZodError} from "zod";
 import {Request, Response, NextFunction} from "express";
-
-declare global {
-	namespace Express {
-		interface Request {
-			validated: { body?: object, query?: object, params?: object }
-		}
-	}
-}
 
 export function formatQueryErrorResponse(e: SchemaValidationError){
 	return e.issues.map(issue => ` ${issue.path} - ${issue.code} - ${issue.message} ||`)
 }
-
 
 export function validateRequest<T extends AnyZodObject>(schema: T) {
 	return async (req: Request, res: Response, next: NextFunction) => {

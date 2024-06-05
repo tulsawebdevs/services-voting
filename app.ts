@@ -1,12 +1,17 @@
+import 'dotenv/config';
 import express from "express";
 import ProposalsRouter from "./routes/proposals";
 import TopicsRouter from "./routes/topics";
 import DraftsRouter from "./routes/drafts";
 import cors from 'cors';
+import { logRequest, clerkAuth } from "./middleware";
+
 const app = express();
 
-app.use(cors())
+app.use(cors());
 app.use(express.json());
+app.use(logRequest);
+app.use(clerkAuth);
 
 app.use("/proposals", ProposalsRouter);
 app.use("/topics", TopicsRouter);
