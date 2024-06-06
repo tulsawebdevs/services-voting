@@ -4,8 +4,8 @@ import {TokenPayload} from "./index";
 
 async function clerkAuth(req : Request, res : Response, next : NextFunction) {
     const token = req.headers.authorization?.replace("Bearer: ", "");
-    const publicKey = process.env.CLERK_JWT_KEY as string;
-    const originalPublicKey = publicKey.replace(/\\n/g, '\n');
+    const base64Key = process.env.CLERK_JWT_KEY as string;
+    const publicKey = Buffer.from(base64Key, 'base64').toString('ascii');
     const whitelist = [
         { method: 'GET', route: '/proposals' }
     ];
@@ -20,7 +20,7 @@ async function clerkAuth(req : Request, res : Response, next : NextFunction) {
         return res.status(401).json({ message: "not signed in" });
     }
     try {
-        const decoded = jwt.verify(token, originalPublicKey) as TokenPayload;
+        const decoded = jwt.verify(token, publicKey) as TokenPayload;
         req.user = decoded;
         next();
     } catch (error) {
