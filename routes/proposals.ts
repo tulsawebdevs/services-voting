@@ -18,8 +18,10 @@ const IndexRequest = z.object(  {
     recordId: z.coerce.number().optional(),
     type: z.enum(["topic", "project"]).optional(),
     status: z.enum(["open", "closed"]).optional(),
-    cursor: z.coerce.number().optional(),
-    limit: z.coerce.number().optional()
+    pagination: z.object({
+      cursor: z.coerce.number().optional(),
+      limit: z.coerce.number().optional()
+    }).optional()
   })
 })
 type IndexQuery = z.infer<typeof IndexRequest>['query'];
@@ -33,9 +35,10 @@ router.get("/", validateRequest(IndexRequest), async (req, res) => {
     recordId,
     type,
     status,
-    cursor,
-    limit
+    pagination
   } = req.validated.query as IndexQuery;
+  const cursor = pagination?.cursor;
+  const limit = pagination?.limit;
   try{
     if (recordId) {
       let proposal = await ProposalsService.show(recordId);
