@@ -1,7 +1,7 @@
 import express from "express";
 import DraftsService from '../services/drafts';
 import { SchemaValidationError } from 'slonik';
-import { formatQueryErrorResponse, validateRequest } from '../helpers';
+import {handleDraftUpdate, filterNullValues, formatQueryErrorResponse, validateRequest} from '../helpers';
 import {PendingDraft, DraftUpdate, Draft} from '../types/draft';
 import { z } from "zod";
 
@@ -26,7 +26,7 @@ const RecordRequest = z.object(  {
 type RecordQuery = z.infer<typeof RecordRequest>
 
 const PostRequest = z.object({
-  body: PendingDraft
+  body: DraftUpdate
 });
 
 const PutRequest = z.object({
@@ -53,13 +53,15 @@ router.get("/", validateRequest(IndexRequest), async (req, res) => {
 
   try {
     if (recordId) {
-      const draft = await DraftsService.show(recordId);
+      let draft = await DraftsService.show(recordId);
+      draft = filterNullValues(draft) as Draft
       return res.status(200).json(draft);
     } else {
-      const drafts = await DraftsService.index(req.user.userEmail, type, cursor, limit);
+      let drafts = await DraftsService.index(req.user.userEmail, type, cursor, limit);
       if (drafts.length === 0) {
         return res.status(404).json({ message: 'No drafts found' });
       }
+      drafts = drafts.map(filterNullValues) as Draft[]
       const response = {
         limit: limit || drafts.length,
         drafts: drafts
@@ -82,10 +84,7 @@ router.post("/", validateRequest(PostRequest), async (req, res) => {
 
   try{
     let draft = await DraftsService.store(validationResult, req.user.userEmail);
-    draft = Object.fromEntries(
-        Object.entries(draft)
-            .filter(([_, v]) => v != null)
-    ) as Draft
+    draft = filterNullValues(draft) as Draft
 
     return res.status(201).json(draft);
   }catch(e){
@@ -96,31 +95,14 @@ router.post("/", validateRequest(PostRequest), async (req, res) => {
 
 router.put("/", validateRequest(PutRequest), async (req, res) => {
   const { recordId } = req.validated.query as RecordQuery;
-  try{
-    const result = await DraftsService.update(recordId, req.validated.body as PendingDraft);
-    if (result.rowCount === 0) {
-      return res.status(404).json({message: 'Draft not found'})
-    }
-    res.status(200).json(await DraftsService.show(recordId));
-  }catch(e){
-    console.log(e)
-    return res.status(500).json({message: 'Server Error'})
-  }
+  const validationResult = req.validated.body as PendingDraft;
+  await handleDraftUpdate(recordId, validationResult, res);
 });
 
 router.patch("/", validateRequest(PatchRequest), async (req, res) => {
   const { recordId } = req.validated.query as RecordQuery;
   const validationResult = req.validated.body as DraftUpdate;
-  try{
-    const result = await DraftsService.update(recordId, validationResult);
-    if (result.rowCount === 0) {
-      return res.status(404).json({message: 'Draft not found'})
-    }
-    res.status(200).json(await DraftsService.show(recordId));
-  }catch(e){
-    console.log(e)
-    return res.status(500).json({message: 'Server Error'})
-  }
+  await handleDraftUpdate(recordId, validationResult, res);
 });
 
 router.delete("/", validateRequest(DeleteRequest), async (req, res) => {

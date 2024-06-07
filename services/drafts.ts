@@ -1,23 +1,26 @@
 import { getPool } from '../database';
 import { sql} from 'slonik';
 import {update as slonikUpdate} from 'slonik-utilities';
-import { Draft, PendingDraft, DraftUpdate } from '../types/draft';
+import { Draft, DraftUpdate } from '../types/draft';
 
 async function index(email: string, type?: string, cursor?: number, limit?: number): Promise<readonly Draft[]> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const rows = await connection.any(
 		sql.type(Draft)`
-		SELECT id, created, updated, title, summary, description, type FROM drafts
+		SELECT id, created, updated, title, summary, description, type 
+		FROM drafts
 		WHERE email = ${email}
 	    ${type ? sql.fragment`AND type = ${type}` : sql.fragment``} 
-        ORDER BY id OFFSET ${cursor ?? null} LIMIT ${limit ?? null};`)
+        ORDER BY id 
+        OFFSET ${cursor ?? null} 
+        LIMIT ${limit ?? null};`)
 
 		return rows;
 	});
 }
 
-async function store(data: PendingDraft, email: string): Promise<Draft> {
+async function store(data: DraftUpdate, email: string): Promise<Draft> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const draft = await connection.one(sql.type(Draft)`
@@ -33,7 +36,9 @@ async function show(id: number): Promise<Draft> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const draft = await connection.maybeOne(sql.type(Draft)`
-		SELECT * FROM drafts WHERE id = ${id};`)
+		SELECT id, created, updated, title, summary, description, type 
+		FROM drafts 
+		WHERE id = ${id};`)
 
 		if (!draft) throw new Error('Draft not found');
 		return draft;
