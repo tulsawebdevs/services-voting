@@ -3,26 +3,27 @@ import { sql} from 'slonik';
 import {update as slonikUpdate} from 'slonik-utilities';
 import { Draft, PendingDraft, DraftUpdate } from '../types/draft';
 
-async function index(type?: string, cursor?: number, limit?: number): Promise<readonly Draft[]> {
+async function index(email: string, type?: string, cursor?: number, limit?: number): Promise<readonly Draft[]> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const rows = await connection.any(
 		sql.type(Draft)`
-		SELECT * FROM drafts
-	    ${type ? sql.fragment`WHERE type = ${type}` : sql.fragment``} 
+		SELECT id, created, updated, title, summary, description, type FROM drafts
+		WHERE email = ${email}
+	    ${type ? sql.fragment`AND type = ${type}` : sql.fragment``} 
         ORDER BY id OFFSET ${cursor ?? null} LIMIT ${limit ?? null};`)
 
 		return rows;
 	});
 }
 
-async function store(data: PendingDraft): Promise<Draft> {
+async function store(data: PendingDraft, email: string): Promise<Draft> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const draft = await connection.one(sql.type(Draft)`
-		INSERT INTO drafts (title, summary, description, type) 
-		VALUES (${data.title ?? null}, ${data.summary ?? null}, ${data.description ?? null}, ${data.type ?? null}) 
-		RETURNING *;`)
+		INSERT INTO drafts (title, summary, description, type, email) 
+		VALUES (${data.title ?? null}, ${data.summary ?? null}, ${data.description ?? null}, ${data.type ?? null}, ${email}) 
+		RETURNING id, created, updated, title, summary, description, type;`)
 
 		return draft;
 	});

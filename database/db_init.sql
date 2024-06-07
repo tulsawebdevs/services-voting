@@ -56,7 +56,8 @@ CREATE TABLE if NOT EXISTS drafts (
      type varchar(32),
      id SERIAL PRIMARY KEY,
      created TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
-     updated TIMESTAMPTZ
+     updated TIMESTAMPTZ,
+     email TEXT NOT NULL
 );
 
 CREATE OR REPLACE TRIGGER set_updated

@@ -56,7 +56,7 @@ router.get("/", validateRequest(IndexRequest), async (req, res) => {
       const draft = await DraftsService.show(recordId);
       return res.status(200).json(draft);
     } else {
-      const drafts = await DraftsService.index(type, cursor, limit);
+      const drafts = await DraftsService.index(req.user.userEmail, type, cursor, limit);
       if (drafts.length === 0) {
         return res.status(404).json({ message: 'No drafts found' });
       }
@@ -81,7 +81,7 @@ router.post("/", validateRequest(PostRequest), async (req, res) => {
   const validationResult = req.validated.body as PendingDraft
 
   try{
-    let draft = await DraftsService.store(validationResult);
+    let draft = await DraftsService.store(validationResult, req.user.userEmail);
     draft = Object.fromEntries(
         Object.entries(draft)
             .filter(([_, v]) => v != null)
