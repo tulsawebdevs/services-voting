@@ -1,8 +1,6 @@
 import { SchemaValidationError } from "slonik";
 import {AnyZodObject, ZodError} from "zod";
 import {Request, Response, NextFunction} from "express";
-import {Draft, DraftBody} from "./types/draft";
-import DraftsService from './services/drafts';
 
 export function formatQueryErrorResponse(e: SchemaValidationError){
 	return e.issues.map(issue => ` ${issue.path} - ${issue.code} - ${issue.message} ||`)
@@ -38,26 +36,6 @@ export function filterNullValues(obj: Record<string, any>) {
 		Object.entries(obj)
 			.filter(([_, v]) => v != null)
 	);
-}
-
-export async function handleDraftUpdate(
-	recordId: number,
-	body: DraftBody,
-	res: Response
-) {
-	try {
-		const result = await DraftsService.update(recordId, body);
-		if (result.rowCount === 0) {
-			return res.status(404).json({ message: 'Draft not found' });
-		}
-
-		let draft = await DraftsService.show(recordId);
-		draft = filterNullValues(draft) as Draft;
-		return res.status(200).json(draft);
-	} catch (e) {
-		console.log(e);
-		return res.status(500).json({ message: 'Server Error' });
-	}
 }
 
 function _formatZodError(error: ZodError): string {

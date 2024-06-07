@@ -1,7 +1,8 @@
 import { getPool } from '../database';
 import { sql} from 'slonik';
 import {update as slonikUpdate} from 'slonik-utilities';
-import { Draft, DraftUpdate } from '../types/draft';
+import {Draft, DraftBody, DraftUpdate} from '../types/draft';
+import {filterNullValues} from "../helpers";
 
 async function index(email: string, type?: string, cursor?: number, limit?: number): Promise<readonly Draft[]> {
 	const pool = await getPool();
@@ -45,15 +46,24 @@ async function show(id: number): Promise<Draft> {
 	});
 }
 
-async function update(id: number, data: DraftUpdate) {
+async function update(id: number, data: DraftBody): Promise<Draft> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
-		return await slonikUpdate(
-			connection, 
+		const result = await slonikUpdate(
+			connection,
 			'drafts',
 			data,
-			{id}
-		)
+			{ id }
+		);
+		if (result.rowCount === 0) {
+			throw new Error('Draft not found');
+		}
+		const draft = await connection.maybeOne(sql.type(Draft)`
+		  SELECT id, created, updated, title, summary, description, type 
+		  FROM drafts 
+		  WHERE id = ${id};
+		`) as Draft;
+		return filterNullValues(draft) as Draft;
 	});
 }
 

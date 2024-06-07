@@ -1,7 +1,7 @@
 import express from "express";
 import DraftsService from '../services/drafts';
 import { SchemaValidationError } from 'slonik';
-import {handleDraftUpdate, filterNullValues, formatQueryErrorResponse, validateRequest} from '../helpers';
+import {filterNullValues, formatQueryErrorResponse, validateRequest} from '../helpers';
 import {PendingDraft, DraftUpdate, Draft} from '../types/draft';
 import { z } from "zod";
 
@@ -98,13 +98,31 @@ router.post("/", validateRequest(PostRequest), async (req, res) => {
 router.put("/", validateRequest(PutRequest), async (req, res) => {
   const { recordId } = req.validated.query as RecordQuery;
   const validationResult = req.validated.body as PendingDraft;
-  await handleDraftUpdate(recordId, validationResult, res);
+  try {
+    const draft = await DraftsService.update(recordId, validationResult);
+    return res.status(200).json(draft);
+  } catch (e) {
+    if (e instanceof Error && e.message.includes('Draft not found')) {
+      return res.status(404).json({ message: e.message });
+    }
+    console.log(e);
+    return res.status(500).json({ message: 'Server Error' });
+  }
 });
 
 router.patch("/", validateRequest(PatchRequest), async (req, res) => {
   const { recordId } = req.validated.query as RecordQuery;
   const validationResult = req.validated.body as DraftUpdate;
-  await handleDraftUpdate(recordId, validationResult, res);
+  try {
+    const draft = await DraftsService.update(recordId, validationResult);
+    return res.status(200).json(draft);
+  } catch (e) {
+    if (e instanceof Error && e.message.includes('Draft not found')) {
+      return res.status(404).json({ message: e.message });
+    }
+    console.log(e);
+    return res.status(500).json({ message: 'Server Error' });
+  }
 });
 
 router.delete("/", validateRequest(DeleteRequest), async (req, res) => {
