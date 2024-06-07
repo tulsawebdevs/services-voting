@@ -61,7 +61,7 @@ async function store(data: PendingProposal, author: string, email: string): Prom
 	return await pool.connect(async (connection) => {
 		const proposal = await connection.one(sql.type(Proposal)`
 		INSERT INTO proposals (title, summary, description, type, author_name, voter_email) 
-		VALUES (${data.title}, ${data.summary}, ${data.description}, ${data.type}, ${author}, ${email}) 
+		VALUES (${data.title}, ${data.summary}, ${data.description ?? null}, ${data.type}, ${author}, ${email}) 
 		RETURNING author_name AS "authorName", status, title, summary, description, type, id, created, updated;`)
 
 		return proposal;
