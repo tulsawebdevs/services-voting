@@ -31,6 +31,13 @@ export function badRequest(message: string, res: Response){
 	return res.status(422).json({ message });
 }
 
+export function filterNullValues(obj: Record<string, any>) {
+	return Object.fromEntries(
+		Object.entries(obj)
+			.filter(([_, v]) => v != null)
+	);
+}
+
 function _formatZodError(error: ZodError): string {
 	return error.errors
 		.map((issue) => `${issue.path.join('.')} - ${issue.message}`)

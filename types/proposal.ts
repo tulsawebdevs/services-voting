@@ -32,7 +32,7 @@ type ProposalState = z.infer<typeof ProposalState>
 const PendingProposal = z.object({
 	title: z.string().min(8).max(48),
 	summary: z.string().min(30).max(255),
-	description: z.string().max(2048),
+	description: z.string().max(2048).optional().nullable(),
 	type: z.enum(['topic', 'project']),
 })
 

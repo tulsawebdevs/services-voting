@@ -7,7 +7,7 @@ async function store(data: PendingVote, proposalId: number, email: string): Prom
 	return await pool.connect(async (connection) => {
 		const newVote = await connection.one(sql.type(Vote)`
 			INSERT INTO votes (voter_email, proposal_id, vote, comment)
-			VALUES (${email}, ${proposalId}, ${data.value}, ${data.comment})
+			VALUES (${email}, ${proposalId}, ${data.value}, ${data.comment ?? null})
 			ON CONFLICT (voter_email, proposal_id) 
             DO UPDATE SET
 				vote = EXCLUDED.vote,
