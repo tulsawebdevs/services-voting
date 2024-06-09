@@ -16,6 +16,9 @@ app.use(clerkAuth);
 app.use("/proposals", ProposalsRouter);
 app.use("/topics", TopicsRouter);
 app.use("/drafts", DraftsRouter);
+app.use("/health", (req, res) => {
+  res.status(200).json({ message: "Ok" });
+});
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
@@ -23,7 +26,7 @@ app.get("/", (req, res) => {
 
 // 404 handler
 app.use((req, res, next) => {
-  res.status(404).json({error: `route ${req.url} does not exist`});
+  res.status(404).json({ error: `route ${req.url} does not exist` });
 })
 
 export default app;

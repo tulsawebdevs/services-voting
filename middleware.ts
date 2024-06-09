@@ -3,7 +3,8 @@ import jwt from "jsonwebtoken";
 import { TokenPayload } from "./index";
 
 const whitelist = [
-    { method: 'GET', route: '/proposals' }
+    { method: 'GET', route: '/proposals' },
+    { method: 'GET', route: '/health' },
 ];
 
 async function clerkAuth(req: Request, res: Response, next: NextFunction) {
