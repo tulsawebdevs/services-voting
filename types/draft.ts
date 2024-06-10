@@ -28,4 +28,12 @@ const DraftBody = z.union([PendingDraft, DraftUpdate])
 
 type DraftBody = z.infer<typeof DraftBody>
 
-export { Draft, PendingDraft, DraftUpdate, DraftBody }
+const DraftResponse = z.object({
+	limit: z.number(),
+	drafts: z.array(Draft),
+	cursor: z.number().optional()
+})
+
+type DraftResponse = z.infer<typeof DraftResponse>
+
+export { Draft, PendingDraft, DraftUpdate, DraftBody, DraftResponse }

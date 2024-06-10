@@ -2,7 +2,7 @@ import express from "express";
 import DraftsService from '../services/drafts';
 import { SchemaValidationError } from 'slonik';
 import {filterNullValues, formatQueryErrorResponse, validateRequest} from '../helpers';
-import {PendingDraft, DraftUpdate, Draft} from '../types/draft';
+import {PendingDraft, DraftUpdate, Draft, DraftResponse} from '../types/draft';
 import { z } from "zod";
 
 const router = express.Router();
@@ -59,14 +59,15 @@ router.get("/", validateRequest(IndexRequest), async (req, res) => {
       draft = filterNullValues(draft) as Draft
       return res.status(200).json(draft);
     } else {
-      let drafts = await DraftsService.index(req.user.userEmail, type, cursor, limit);
+      const { drafts, nextCursor } = await DraftsService.index(req.user.userEmail, type, cursor, limit);
       if (drafts.length === 0) {
         return res.status(404).json({ message: 'No drafts found' });
       }
-      drafts = drafts.map(filterNullValues) as Draft[]
-      const response = {
+      const filteredDrafts = drafts.map(filterNullValues) as Draft[]
+      const response : DraftResponse  = {
         limit: limit || drafts.length,
-        drafts: drafts
+        drafts: filteredDrafts,
+        cursor: nextCursor
       }
       return res.status(200).json(response);
     }
