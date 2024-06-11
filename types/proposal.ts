@@ -3,7 +3,7 @@ import { z } from 'zod'
 const Proposal = z.object({
 	id: z.number().int().positive(),
 	created: z.string(),
-	updated: z.string().nullable(),
+	updated: z.string(),
 	title: z.string().min(8).max(48),
 	summary: z.string().min(30).max(255),
 	description: z.string().max(2048),
@@ -16,12 +16,12 @@ type Proposal = z.infer<typeof Proposal>
 
 const ProposalState = Proposal.extend({
 	user_vote: z.object({
-		value: z.string(),
+		value: z.number().min(-2).max(2).nullable(),
 		comment: z.string(),
 	}).optional(),
 	results: z.array(
 		z.object({
-			value: z.string(),
+			value: z.number().min(-2).max(2).nullable(),
 			comment: z.string(),
 		})
 	).optional(),

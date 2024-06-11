@@ -7,7 +7,7 @@ const Vote = z.object({
 	comment: z.string().max(255),
 	id: z.number().int().positive(),
 	created: z.string(),
-	updated: z.string().nullable(),
+	updated: z.string(),
 })
 
 type Vote = z.infer<typeof Vote>

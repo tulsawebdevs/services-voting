@@ -7,7 +7,7 @@ const Draft = z.object({
 	type: z.enum(['topic', 'project']).optional(),
 	id: z.number().int().positive(),
 	created: z.string(),
-	updated: z.string().nullable().optional(),
+	updated: z.string(),
 })
 
 type Draft = z.infer<typeof Draft>
