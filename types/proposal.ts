@@ -16,12 +16,12 @@ type Proposal = z.infer<typeof Proposal>
 
 const ProposalState = Proposal.extend({
 	user_vote: z.object({
-		value: z.string(),
+		value: z.number().min(-2).max(2).nullable(),
 		comment: z.string(),
 	}).optional(),
 	results: z.array(
 		z.object({
-			value: z.string(),
+			value: z.number().min(-2).max(2).nullable(),
 			comment: z.string(),
 		})
 	).optional(),

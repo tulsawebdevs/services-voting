@@ -46,9 +46,8 @@ async function index(
         LIMIT ${adjustedLimit};`);
 
 		const filteredRows = rows.map(row => {
-			if (row.status === 'open') {
-				const { results, ...rest } = row;
-				return rest;
+			if (row.status === 'open' || !row.results) {
+				return { ...row, results: [] }
 			}
 			return row;
 		});
