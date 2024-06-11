@@ -7,15 +7,15 @@ import {filterNullValues} from "../helpers";
 async function index(email: string, type?: string, cursor?: number, limit?: number): Promise<readonly Draft[]> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
-		const rows = await connection.any(
-		sql.type(Draft)`
+		const adjustedLimit = limit ? limit + 1 : null;
+		const rows = await connection.any(sql.type(Draft)`
 		SELECT id, created, updated, title, summary, description, type 
 		FROM drafts
 		WHERE email = ${email}
-	    ${type ? sql.fragment`AND type = ${type}` : sql.fragment``} 
-        ORDER BY id 
-        OFFSET ${cursor ?? null} 
-        LIMIT ${limit ?? null};`)
+		${type ? sql.fragment`AND type = ${type}` : sql.fragment``}
+		ORDER BY id 
+		OFFSET ${cursor ?? null} 
+		LIMIT ${adjustedLimit};`);
 
 		return rows;
 	});

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+
 const Draft = z.object({
 	title: z.string().max(48).optional(),
 	summary: z.string().max(255).optional(),

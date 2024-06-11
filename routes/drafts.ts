@@ -63,10 +63,16 @@ router.get("/", validateRequest(IndexRequest), async (req, res) => {
       if (drafts.length === 0) {
         return res.status(404).json({ message: 'No drafts found' });
       }
-      drafts = drafts.map(filterNullValues) as Draft[]
-      const response = {
+      let nextCursor;
+      if (limit && drafts.length === limit + 1) {
+        drafts = drafts.slice(0, limit);
+        nextCursor = (cursor ?? 0) + limit;
+      }
+      const filteredDrafts = drafts.map(filterNullValues) as Draft[]
+      const response  = {
         limit: limit || drafts.length,
-        drafts: drafts
+        drafts: filteredDrafts,
+        cursor: nextCursor
       }
       return res.status(200).json(response);
     }

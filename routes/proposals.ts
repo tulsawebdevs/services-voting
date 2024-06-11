@@ -49,10 +49,16 @@ router.get("/", validateRequest(IndexRequest), async (req, res) => {
       if (proposals.length === 0) {
         return res.status(404).json({ message: 'No proposals found' });
       }
+      let nextCursor;
+      if (limit && proposals.length === limit + 1) {
+        proposals = proposals.slice(0, limit); // Remove the extra draft
+        nextCursor = (cursor ?? 0) + limit;
+      }
       proposals = proposals.map(filterNullValues) as Proposal[]
       const response = {
         limit: limit || proposals.length,
-        proposals: proposals
+        proposals: proposals,
+        cursor: nextCursor
       }
       return res.status(200).json(response);
     }
