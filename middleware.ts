@@ -8,6 +8,14 @@ const whitelist = [
 ];
 
 async function clerkAuth(req: Request, res: Response, next: NextFunction) {
+    // Bypass token auth for tests
+    if (process.env.NODE_ENV === 'test') {
+        req.user = {
+            userEmail: 'test@test.com',
+            userFullName: 'Test User',
+        }
+        return next();
+    }
     const token = req.headers.authorization?.replace("Bearer ", "");
     const base64Key = process.env.CLERK_JWT_KEY as string;
     const publicKey = Buffer.from(base64Key, 'base64').toString('ascii');
@@ -34,12 +42,18 @@ async function clerkAuth(req: Request, res: Response, next: NextFunction) {
 }
 
 async function logRequest(req: Request, res: Response, next: NextFunction) {
-    console.log(`
-		${req.method} ${req.url}
-		Body: ${JSON.stringify(req.body)}
-		Headers: ${JSON.stringify(req.headers, null, 2)}
-	`);
+    if (process.env.LOG_REQUESTS){
+        console.log(`
+            ${req.method} /${req.url}
+            Body: ${JSON.stringify(req.body, null, 2)}
+        `);
+    }
+
+    if (process.env.LOG_REQ_HEADERS === 'true') {
+        console.log(`Headers: ${JSON.stringify(req.headers, null, 2)}`);
+    }
     next()
+
 }
 
 export { logRequest, clerkAuth };
