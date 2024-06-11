@@ -3,11 +3,9 @@ import { TEST_SERVER_URL } from "./global.setup";
 import {resetDatabase} from "../database";
 
 describe('test suite works', () => {
-
   it("should hit health check", async () => {
-    const res = await fetch(TEST_SERVER_URL);
+    const res = await fetch(`${TEST_SERVER_URL}/health`);
     expect(res.status).toEqual(200);
-    expect(await res.text()).toContain('Hello World');
   });
 })
 
