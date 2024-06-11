@@ -4,27 +4,20 @@ import {update as slonikUpdate} from 'slonik-utilities';
 import {Draft, DraftBody, DraftUpdate} from '../types/draft';
 import {filterNullValues} from "../helpers";
 
-async function index(email: string, type?: string, cursor?: number, limit?: number): Promise<{ drafts: Draft[], nextCursor?: number }> {
+async function index(email: string, type?: string, cursor?: number, limit?: number): Promise<readonly Draft[]> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const adjustedLimit = limit ? limit + 1 : null;
-		const rows = await connection.any(
-		sql.type(Draft)`
+		const rows = await connection.any(sql.type(Draft)`
 		SELECT id, created, updated, title, summary, description, type 
 		FROM drafts
 		WHERE email = ${email}
-	    ${type ? sql.fragment`AND type = ${type}` : sql.fragment``} 
-        ORDER BY id 
-        OFFSET ${cursor ?? null} 
-        LIMIT ${adjustedLimit};`)
+		${type ? sql.fragment`AND type = ${type}` : sql.fragment``}
+		ORDER BY id 
+		OFFSET ${cursor ?? null} 
+		LIMIT ${adjustedLimit};`);
 
-		let drafts = [...rows];
-		let nextCursor;
-		if (drafts.length === adjustedLimit) {
-			drafts.pop()
-			nextCursor = (cursor ?? 0) + (limit ?? 0)
-		}
-		return { drafts, nextCursor };
+		return rows;
 	});
 }
 
