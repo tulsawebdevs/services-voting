@@ -11,6 +11,7 @@ async function index(
 ): Promise<readonly ProposalState[]> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
+		const adjustedLimit = limit ? limit + 1 : null;
 		const whereType = type ? sql.fragment`
 			WHERE p.type = ${type}` : sql.fragment``;
 
@@ -42,7 +43,7 @@ async function index(
         GROUP BY p.id, uv.vote, uv.comment
         ORDER BY p.id 
         OFFSET ${cursor ?? null} 
-        LIMIT ${limit ?? null};`);
+        LIMIT ${adjustedLimit};`);
 
 		const filteredRows = rows.map(row => {
 			if (row.status === 'open') {

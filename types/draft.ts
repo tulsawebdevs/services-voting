@@ -1,4 +1,5 @@
 import { z } from 'zod'
+
 const Draft = z.object({
 	title: z.string().max(48).optional(),
 	summary: z.string().max(255).optional(),
@@ -28,12 +29,4 @@ const DraftBody = z.union([PendingDraft, DraftUpdate])
 
 type DraftBody = z.infer<typeof DraftBody>
 
-const DraftResponse = z.object({
-	limit: z.number(),
-	drafts: z.array(Draft),
-	cursor: z.number().optional()
-})
-
-type DraftResponse = z.infer<typeof DraftResponse>
-
-export { Draft, PendingDraft, DraftUpdate, DraftBody, DraftResponse }
+export { Draft, PendingDraft, DraftUpdate, DraftBody }

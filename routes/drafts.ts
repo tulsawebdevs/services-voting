@@ -2,7 +2,7 @@ import express from "express";
 import DraftsService from '../services/drafts';
 import { SchemaValidationError } from 'slonik';
 import {filterNullValues, formatQueryErrorResponse, validateRequest} from '../helpers';
-import {PendingDraft, DraftUpdate, Draft, DraftResponse} from '../types/draft';
+import {PendingDraft, DraftUpdate, Draft} from '../types/draft';
 import { z } from "zod";
 
 const router = express.Router();
@@ -69,7 +69,7 @@ router.get("/", validateRequest(IndexRequest), async (req, res) => {
         nextCursor = (cursor ?? 0) + limit;
       }
       const filteredDrafts = drafts.map(filterNullValues) as Draft[]
-      const response : DraftResponse  = {
+      const response  = {
         limit: limit || drafts.length,
         drafts: filteredDrafts,
         cursor: nextCursor
