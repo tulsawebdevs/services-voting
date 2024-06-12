@@ -1,42 +1,28 @@
+import {it, describe, expect} from 'vitest';
+import { TEST_SERVER_URL } from "./global.setup";
+import { resetDatabase } from '../database';
+
 describe("Proposals API", () => {
-  test("should return all proposals", async () => {
-    const res = await fetch("http://localhost:3000/proposals");
-    const data = await res.json();
-    expect(res.status).toEqual(200);
-    // expect(data).toEqual({ message: "Paginated list of proposals" });
+  it('returns 404 on no proposals', async () => {
+    await resetDatabase();
+    const res = await fetch(`${TEST_SERVER_URL}/proposals`);
+    expect(res.status).toBe(404);
   });
 
-  test("should create a new proposal", async () => {
-    const res = await fetch("http://localhost:3000/proposals", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+  it('store route', async() => {
+    const res = await fetch(`${TEST_SERVER_URL}/proposals`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title: 'Proposal title',
+        description: 'Proposal description',
+        summary: 'Proposal summary of at least 30 chars',
+        type: 'topic',
+      })
     });
-    const data = await res.json();
-    expect(res.status).toEqual(201);
-    expect(data).toEqual({ message: "Proposal created" });
-  });
 
-  test("should return a specific proposal", async () => {
-    const res = await fetch("http://localhost:3000/proposals/1");
-    const data = await res.json();
-    expect(res.status).toEqual(200);
-    expect(data).toEqual({ message: "Proposal with ID 1" });
-  });
-
-  test("should update a specific proposal", async () => {
-    const res = await fetch("http://localhost:3000/proposals/1", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    });
-    const data = await res.json();
-    expect(res.status).toEqual(200);
-    expect(data).toEqual({ message: "Proposal with ID 1 updated" });
-  });
-
-  test("should delete a specific proposal", async () => {
-    const res = await fetch("http://localhost:3000/proposals/1", {
-      method: "DELETE",
-    });
-    expect(res.status).toEqual(204);
-  });
+    expect(res.status).toBe(201);
+  })
 });

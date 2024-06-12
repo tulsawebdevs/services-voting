@@ -1,13 +1,29 @@
 import { expect, describe, it } from "vitest";
 import { TEST_SERVER_URL } from "./global.setup";
+import {resetDatabase} from "../database";
 
 describe('test suite works', () => {
-  it("should return all proposals", async () => {
-    const res = await fetch(TEST_SERVER_URL);
-    const data = await res.json();
+  it("should hit health check", async () => {
+    const res = await fetch(`${TEST_SERVER_URL}/health`);
     expect(res.status).toEqual(200);
-    // expect(data).toEqual({ message: "Paginated list of proposals" });
   });
+})
+
+describe('smoke tests', () => {
+  it('index route 404 on empty db', async () => {
+    await resetDatabase();
+    const res = await fetch(`${TEST_SERVER_URL}/drafts`);
+    const data = await res.json();
+    expect(res.status).toEqual(404);
+  })
+
+  it('store route', async () => {
+    const res = await fetch(`${TEST_SERVER_URL}/drafts/`, {
+      method: 'POST', 
+      body: JSON.stringify({})
+    });
+    expect(res.status).toEqual(201);
+  })
 })
 
 
@@ -30,4 +46,3 @@ TEST DRAFT
 //     ],
 //   });
 // });
-

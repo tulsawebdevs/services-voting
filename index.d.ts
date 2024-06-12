@@ -10,11 +10,13 @@ export interface TokenPayload {
     userFullName: string;
 }
 
+export type TestToken = Pick<TokenPayload, 'userEmail' | 'userFullName'>;
+
 declare global {
     namespace Express {
         interface Request {
             validated: { body?: object, query?: object, params?: object }
-            user: TokenPayload
+            user: TokenPayload | TestToken
         }
     }
 }
