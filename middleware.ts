@@ -21,22 +21,8 @@ async function clerkAuth(req: Request, res: Response, next: NextFunction) {
         (item) => item.method === req.method && item.route === req.path
     );
 
-    // Parse user session token
-    let userSession = {} as TokenPayload;
-    let decodeError;
-
-    try {
-        if (token) {
-            userSession = jwt.verify(token, publicKey) as TokenPayload;
-        }
-    } catch (error) {
-        decodeError = error;
-    }
-
-    // Add user session regardless if whitelisted
-    req.user = userSession;
-
-    if (isWhitelisted) {
+    if (isWhitelisted && !token) {
+        req.user = {} as TokenPayload;
         return next();
     }
 
@@ -44,11 +30,13 @@ async function clerkAuth(req: Request, res: Response, next: NextFunction) {
         return res.status(401).json({ message: "not signed in" });
     }
 
-    if (decodeError) {
-        return res.status(400).json({ error: decodeError });
+    try {
+        const decoded = jwt.verify(token, publicKey) as TokenPayload;
+        req.user = decoded;
+        next();
+    } catch (error) {
+        return res.status(400).json({ error });
     }
-
-    next();
 }
 
 async function logRequest(req: Request, res: Response, next: NextFunction) {
