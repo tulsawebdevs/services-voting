@@ -4,7 +4,6 @@ import { resetDatabase } from "../database";
 import { Proposal } from "../types/proposal";
 import { seedDatabase } from "./helpers/seedDatabase";
 import { TEST_USER } from "../helpers";
-import { beforeEach } from "node:test";
 
 const seedDb = seedDatabase();
 
@@ -105,9 +104,7 @@ describe("Proposals API", () => {
     it("has proposals with user vote", async () => {
       await resetDatabase();
       const [proposal] = await seedDb.addProposals(1);
-      // add a non-logged in user vote
       await seedDb.addUserVote(proposal.id);
-      // add a logged in user vote
       await seedDb.addUserVote(proposal.id, TEST_USER.userEmail);
 
       const res = await fetch(
@@ -128,7 +125,7 @@ describe("Proposals API", () => {
 
       expect(foundProposal).toBeDefined();
       expect(foundProposal).toHaveProperty("results");
-      expect(foundProposal).toHaveProperty("userVote"); // TODO: fix this so it asserts to true
+      expect(foundProposal).toHaveProperty("userVote");
     });
   });
 });

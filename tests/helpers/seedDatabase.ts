@@ -65,11 +65,7 @@ export function seedDatabase({ numUsers = 50, numAuthors = 5, seed = 1 }: SeedOp
     proposalId: number,
     numVotes: number | { min?: number, max?: number } = { min: 0, max: 10 }
   ) {
-    // add random number of votes for a proposal
     const totalVotes = faker.number.int(numVotes);
-
-    // Pull from shuffled list of users
-    // but do not repeat a user when voting for same proposal
     const shuffledUsers = faker.helpers.shuffle(users)
 
     for (let i = 0; i < totalVotes; i += 1) {
