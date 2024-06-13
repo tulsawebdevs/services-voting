@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { TokenPayload } from "./index";
+import { TEST_USER } from "./helpers";
 
 const whitelist = [
     { method: 'GET', route: '/proposals' },
@@ -10,10 +11,7 @@ const whitelist = [
 async function clerkAuth(req: Request, res: Response, next: NextFunction) {
     // Bypass token auth for tests
     if (process.env.NODE_ENV === 'test') {
-        req.user = {
-            userEmail: 'test@test.com',
-            userFullName: 'Test User',
-        }
+        req.user = TEST_USER;
         return next();
     }
     const token = req.headers.authorization?.replace("Bearer ", "");
@@ -23,8 +21,22 @@ async function clerkAuth(req: Request, res: Response, next: NextFunction) {
         (item) => item.method === req.method && item.route === req.path
     );
 
+    // Parse user session token
+    let userSession = {} as TokenPayload;
+    let decodeError;
+
+    try {
+        if (token) {
+            userSession = jwt.verify(token, publicKey) as TokenPayload;
+        }
+    } catch (error) {
+        decodeError = error;
+    }
+
+    // Add user session regardless if whitelisted
+    req.user = userSession;
+
     if (isWhitelisted) {
-        req.user = {} as TokenPayload;
         return next();
     }
 
@@ -32,17 +44,15 @@ async function clerkAuth(req: Request, res: Response, next: NextFunction) {
         return res.status(401).json({ message: "not signed in" });
     }
 
-    try {
-        const decoded = jwt.verify(token, publicKey) as TokenPayload;
-        req.user = decoded;
-        next();
-    } catch (error) {
-        return res.status(400).json({ error });
+    if (decodeError) {
+        return res.status(400).json({ error: decodeError });
     }
+
+    next();
 }
 
 async function logRequest(req: Request, res: Response, next: NextFunction) {
-    if (process.env.LOG_REQUESTS){
+    if (process.env.LOG_REQUESTS) {
         console.log(`
             ${req.method} /${req.url}
             Body: ${JSON.stringify(req.body, null, 2)}
