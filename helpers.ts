@@ -51,3 +51,10 @@ export const TEST_USER = {
 	userEmail: 'test_user@test.com',
 	userFullName: 'Test User',
 };
+
+export class NotFoundError extends Error {
+	constructor(message: string = "Not Found") {
+		super(message);
+		this.name = 'NotFoundError';
+	}
+}
