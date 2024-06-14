@@ -41,12 +41,7 @@ export function seedDatabase({ numUsers = 50, numAuthors = 5, seed = 1 }: SeedOp
     const proposals: Proposal[] = [];
 
     for (let i = 0; i < numProposals; i += 1) {
-      const newProposal = await PendingProposal.parseAsync({
-        title: faker.lorem.word({ length: { min: 8, max: 48 } }),
-        summary: faker.lorem.sentence({ min: 5, max: 10 }),
-        description: faker.lorem.paragraph({ min: 1, max: 3 }),
-        type: faker.helpers.arrayElement(['topic', 'project'])
-      });
+      const newProposal = await PendingProposal.parseAsync(ProposalService.factory());
 
       const author = faker.helpers.arrayElement(authors);
 
@@ -72,7 +67,7 @@ export function seedDatabase({ numUsers = 50, numAuthors = 5, seed = 1 }: SeedOp
       const email = shuffledUsers[i].email;
 
       await VotesService.store(
-        { value: faker.helpers.arrayElement([-2, -1, 0, 1, 2]) },
+        VotesService.factory(),
         proposalId,
         email
       )
@@ -83,7 +78,7 @@ export function seedDatabase({ numUsers = 50, numAuthors = 5, seed = 1 }: SeedOp
     userEmail = userEmail || (faker.helpers.arrayElement(users)).email;
 
     await VotesService.store(
-      { value: faker.helpers.arrayElement([-2, -1, 0, 1, 2]) },
+      VotesService.factory(),
       proposalId,
       userEmail
     )
