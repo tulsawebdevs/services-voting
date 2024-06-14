@@ -1,9 +1,11 @@
 import { it, describe, expect } from "vitest";
 import { TEST_SERVER_URL } from "./global.setup";
 import { resetDatabase } from "../database";
-import { Proposal } from "../types/proposal";
+import {PendingProposal, Proposal} from "../types/proposal";
 import { seedDatabase } from "./helpers/seedDatabase";
 import { TEST_USER } from "../helpers";
+import assertDatabaseHas from './helpers/assertDatabaseHas';
+import ProposalsService from '../services/proposals';
 
 const seedDb = seedDatabase();
 
@@ -126,6 +128,20 @@ describe("Proposals API", () => {
       expect(foundProposal).toBeDefined();
       expect(foundProposal).toHaveProperty("results");
       expect(foundProposal).toHaveProperty("userVote");
+    });
+  });
+
+  describe('assertDatabaseHas helper', () => {
+    it('should store a proposal and verify it exists in the database', async () => {
+      await resetDatabase();
+      const proposalData = ProposalsService.factory();
+      await ProposalsService.store(proposalData as PendingProposal, TEST_USER.userFullName, TEST_USER.userEmail);
+      await assertDatabaseHas('proposals', {
+        title: proposalData.title,
+        summary: proposalData.summary,
+        description: proposalData.description,
+        type: proposalData.type
+      });
     });
   });
 });
