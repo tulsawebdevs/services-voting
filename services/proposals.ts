@@ -3,6 +3,8 @@ import { sql } from 'slonik';
 import { update as slonikUpdate } from 'slonik-utilities';
 import { Proposal, ProposalState, PendingProposal, ProposalUpdate } from '../types/proposal';
 import { NotFoundError } from '../helpers';
+import {number} from "zod";
+import {faker} from "@faker-js/faker";
 
 async function index(
 	type?: string,
@@ -122,10 +124,31 @@ async function destroy(id: number) {
 	});
 }
 
+async function count(): Promise<number> {
+	const pool = await getPool();
+	return await pool.connect(async (connection) => {
+		const result = await connection.oneFirst(sql.type(number())`
+        SELECT COUNT(*) FROM proposals;`);
+		return Number(result);
+	});
+}
+
+function factory(params: ProposalUpdate = {}): PendingProposal {
+	const defaultProposal = {
+		title: faker.lorem.word({ length: { min: 8, max: 48 } }),
+		summary: faker.lorem.sentence({ min: 5, max: 10 }),
+		description: faker.lorem.paragraph({ min: 1, max: 3 }),
+		type: faker.helpers.arrayElement(['topic', 'project'])
+	};
+	return { ...defaultProposal, ...params } as PendingProposal;
+}
+
 export default {
 	index,
 	store,
 	show,
 	update,
 	destroy,
+	count,
+	factory
 }

@@ -1,6 +1,8 @@
 import { getPool } from '../database';
 import { sql} from 'slonik';
 import { Vote, PendingVote } from '../types/vote';
+import {number} from "zod";
+import { faker } from "@faker-js/faker";
 
 async function store(data: PendingVote, proposalId: number, email: string): Promise<Vote> {
 	const pool = await getPool();
@@ -28,7 +30,26 @@ async function destroy(proposalId: number, email: string) {
 	});
 }
 
+async function count(): Promise<number> {
+	const pool = await getPool();
+	return await pool.connect(async (connection) => {
+		const result = await connection.oneFirst(sql.type(number())`
+        SELECT COUNT(*) FROM votes;`);
+		return Number(result);
+	});
+}
+
+function factory(params: Partial<PendingVote> = {}): PendingVote {
+	const defaultVote = {
+		value: faker.helpers.arrayElement([-2, -1, 0, 1, 2]),
+		comment: faker.lorem.sentence({ min: 5, max: 10 }),
+	};
+	return { ...defaultVote, ...params } as PendingVote;
+}
+
 export default {
 	store,
 	destroy,
-}
+	count,
+	factory
+};

@@ -1,6 +1,8 @@
 import { expect, describe, it } from "vitest";
 import { TEST_SERVER_URL } from "./global.setup";
 import {resetDatabase} from "../database";
+import DraftsService from '../services/drafts';
+import assertDatabaseHas from "./helpers/assertDatabaseHas";
 
 describe('test suite works', () => {
   it("should hit health check", async () => {
@@ -25,6 +27,19 @@ describe('smoke tests', () => {
     expect(res.status).toEqual(201);
   })
 })
+
+describe('factory and count services', () => {
+  it('should create and count drafts', async () => {
+    await resetDatabase()
+    const email = 'test@example.com';
+    const customTitle = 'Custom Title';
+    const draftData = DraftsService.factory({ title: customTitle });
+    await DraftsService.store(draftData, email);
+    const count = await DraftsService.count();
+    expect(count).toBeGreaterThan(0);
+    await assertDatabaseHas("drafts", { title: customTitle });
+  });
+});
 
 
 
