@@ -134,8 +134,8 @@ describe("Proposals API", () => {
   describe('assertDatabaseHas helper', () => {
     it('should store a proposal and verify it exists in the database', async () => {
       await resetDatabase();
-      const proposalData = ProposalsService.factory();
-      await ProposalsService.store(proposalData as PendingProposal, TEST_USER.userFullName, TEST_USER.userEmail);
+      const proposals = await seedDb.addProposals(1);
+      const [proposalData] = proposals;
       await assertDatabaseHas('proposals', {
         title: proposalData.title,
         summary: proposalData.summary,
