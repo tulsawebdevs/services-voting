@@ -10,7 +10,26 @@
 
 ## Development
 
-`docker-compose up -d` 
+`docker-compose up -d`
+
+## Database
+
+When starting the docker container it should initialize the database for you.
+
+If you need to manually do it:
+
+```
+cd database
+./init_db.sh
+```
+
+### Seed Database
+
+If you would like to have fake data to test with. You can run the following (make sure container is running first):
+
+```
+docker compose exec -T web npm run db:seed
+```
 
 ## Deployment
 

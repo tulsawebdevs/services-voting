@@ -1,8 +1,8 @@
 import { SchemaValidationError } from "slonik";
-import {AnyZodObject, ZodError} from "zod";
-import {Request, Response, NextFunction} from "express";
+import { AnyZodObject, ZodError } from "zod";
+import { Request, Response, NextFunction } from "express";
 
-export function formatQueryErrorResponse(e: SchemaValidationError){
+export function formatQueryErrorResponse(e: SchemaValidationError) {
 	return e.issues.map(issue => ` ${issue.path} - ${issue.code} - ${issue.message} ||`)
 }
 
@@ -29,7 +29,7 @@ export function validateRequest<T extends AnyZodObject>(schema: T) {
 	};
 }
 
-export function badRequest(message: string, res: Response){
+export function badRequest(message: string, res: Response) {
 	return res.status(422).json({ message });
 }
 
@@ -44,4 +44,17 @@ function _formatZodError(error: ZodError): string {
 	return error.errors
 		.map((issue) => `${issue.path.join('.')} - ${issue.message}`)
 		.join(' || ');
+}
+
+
+export const TEST_USER = {
+	userEmail: 'test_user@test.com',
+	userFullName: 'Test User',
+};
+
+export class NotFoundError extends Error {
+	constructor(message: string = "Not Found") {
+		super(message);
+		this.name = 'NotFoundError';
+	}
 }

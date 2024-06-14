@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { TokenPayload } from "./index";
+import { TEST_USER } from "./helpers";
 
 const whitelist = [
     { method: 'GET', route: '/proposals' },
@@ -10,10 +11,7 @@ const whitelist = [
 async function clerkAuth(req: Request, res: Response, next: NextFunction) {
     // Bypass token auth for tests
     if (process.env.NODE_ENV === 'test') {
-        req.user = {
-            userEmail: 'test@test.com',
-            userFullName: 'Test User',
-        }
+        req.user = TEST_USER;
         return next();
     }
     const token = req.headers.authorization?.replace("Bearer ", "");
@@ -23,7 +21,7 @@ async function clerkAuth(req: Request, res: Response, next: NextFunction) {
         (item) => item.method === req.method && item.route === req.path
     );
 
-    if (isWhitelisted) {
+    if (isWhitelisted && !token) {
         req.user = {} as TokenPayload;
         return next();
     }
@@ -42,7 +40,7 @@ async function clerkAuth(req: Request, res: Response, next: NextFunction) {
 }
 
 async function logRequest(req: Request, res: Response, next: NextFunction) {
-    if (process.env.LOG_REQUESTS){
+    if (process.env.LOG_REQUESTS) {
         console.log(`
             ${req.method} /${req.url}
             Body: ${JSON.stringify(req.body, null, 2)}
