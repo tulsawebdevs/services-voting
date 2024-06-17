@@ -6,6 +6,7 @@ import { seedDatabase } from "./helpers/seedDatabase";
 import { TEST_USER } from "../helpers";
 import assertDatabaseHas from './helpers/assertDatabaseHas';
 import DraftsService from "../services/drafts";
+import ProposalsService from "../services/proposals";
 
 const seedDb = seedDatabase();
 
@@ -196,17 +197,35 @@ describe('factory and count services', () => {
  * WINNER
  ****************************************/
 
-describe("winner tests", () => {
+describe("winner endpoint", () => {
   it("should return leading proposal and mark closed", async () => {
     await resetDatabase();
     const proposals = await seedDb.addProposals(2);
     const winningProposal = proposals[0];
-    await seedDb.addPositiveVote(winningProposal.id);
-    await seedDb.addNegativeVote(proposals[1].id)
+    await seedDb.addUserVote(winningProposal.id, undefined, 2);
+    await seedDb.addUserVote(proposals[1].id, undefined, -2)
     const res = await fetch(`${TEST_SERVER_URL}/winner`);
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.id).toEqual(winningProposal.id);
     expect(data.status).toBe('closed');
+  })
+})
+
+describe("winner endpoint - tied proposals", () => {
+  it("should return a random winner in case of tie", async () => {
+    await resetDatabase();
+    const proposals = await seedDb.addProposals(3);
+    for (const proposal of proposals) {
+      await seedDb.addUserVote(proposal.id, undefined, 2)
+    }
+    const res = await fetch(`${TEST_SERVER_URL}/winner`);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.status).toBe('closed');
+    const remainingProposals = proposals.filter(p => p.id !== data.id);
+    for (const proposal of remainingProposals) {
+      expect(proposal.status).toBe('open');
+    }
   })
 })
