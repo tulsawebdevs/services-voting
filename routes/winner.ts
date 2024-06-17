@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get("/", async  (req, res) => {
     try {
-        const winner = WinnerService.getWinner();
+        const winner = await WinnerService.getWinner();
         return res.status(200).json(winner)
     } catch (e) {
         console.log(e)

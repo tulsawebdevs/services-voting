@@ -84,11 +84,33 @@ export function seedDatabase({ numUsers = 50, numAuthors = 5, seed = 1 }: SeedOp
     )
   }
 
+  async function addPositiveVote(proposalId: number, userEmail?: string) {
+    userEmail = userEmail || (faker.helpers.arrayElement(users)).email;
+
+    await VotesService.store(
+      VotesService.factory({value: 2}),
+      proposalId,
+      userEmail
+    )
+  }
+
+  async function addNegativeVote(proposalId: number, userEmail?: string) {
+    userEmail = userEmail || (faker.helpers.arrayElement(users)).email;
+
+    await VotesService.store(
+      VotesService.factory({value: -2}),
+      proposalId,
+      userEmail
+    )
+  }
+
   return {
     addProposals,
     addVotesForProposal,
     addUserVote,
     users,
-    authors
+    authors,
+    addPositiveVote,
+    addNegativeVote
   };
 }
