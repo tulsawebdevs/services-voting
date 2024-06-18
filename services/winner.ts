@@ -1,12 +1,16 @@
 import { getPool } from '../database';
 import {sql} from 'slonik';
-import { Proposal } from "../types/proposal";
+import {Proposal, ProposalState} from "../types/proposal";
 
 async function getWinner(): Promise<Proposal> {
     const pool = await getPool();
     return await pool.connect(async (connection) => {
-        const proposals = await connection.any(sql.type(Proposal)`
-            SELECT p.*
+        const proposals = await connection.any(sql.type(ProposalState)`
+            SELECT
+                p.*,
+                json_agg(
+                json_build_object('value', v.vote, 'comment', v.comment)
+                        ) FILTER (WHERE v.vote IS NOT NULL) as results
             FROM proposals p
                 JOIN votes v ON p.id = v.proposal_id
             WHERE p.status = 'open'
@@ -34,7 +38,10 @@ async function getWinner(): Promise<Proposal> {
             RETURNING *
         `);
 
-        return updatedProposal;
+        return {
+            ...updatedProposal,
+            results: chosenProposal.results,
+        };
     });
 }
 
