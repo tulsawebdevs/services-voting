@@ -6,7 +6,6 @@ import { seedDatabase } from "./helpers/seedDatabase";
 import { TEST_USER } from "../helpers";
 import assertDatabaseHas from './helpers/assertDatabaseHas';
 import DraftsService from "../services/drafts";
-import ProposalsService from "../services/proposals";
 
 const seedDb = seedDatabase();
 
