@@ -11,6 +11,6 @@ if (process.env.NODE_ENV === 'test') {
     admins.push(TEST_USER.userEmail)
 }
 
-module.exports = {
+export default {
     admins
 };
