@@ -74,11 +74,11 @@ export function seedDatabase({ numUsers = 50, numAuthors = 5, seed = 1 }: SeedOp
     }
   }
 
-  async function addUserVote(proposalId: number, userEmail?: string) {
+  async function addUserVote(proposalId: number, userEmail?: string, value: number = 1) {
     userEmail = userEmail || (faker.helpers.arrayElement(users)).email;
 
     await VotesService.store(
-      VotesService.factory(),
+      VotesService.factory({value: value}),
       proposalId,
       userEmail
     )
@@ -89,6 +89,6 @@ export function seedDatabase({ numUsers = 50, numAuthors = 5, seed = 1 }: SeedOp
     addVotesForProposal,
     addUserVote,
     users,
-    authors
+    authors,
   };
 }

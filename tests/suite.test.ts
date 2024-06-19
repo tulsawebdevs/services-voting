@@ -1,13 +1,25 @@
 import { it, describe, expect } from "vitest";
 import { TEST_SERVER_URL } from "./global.setup";
 import { resetDatabase } from "../database";
-import {PendingProposal, Proposal} from "../types/proposal";
+import {Proposal} from "../types/proposal";
 import { seedDatabase } from "./helpers/seedDatabase";
 import { TEST_USER } from "../helpers";
 import assertDatabaseHas from './helpers/assertDatabaseHas';
-import ProposalsService from '../services/proposals';
+import DraftsService from "../services/drafts";
 
 const seedDb = seedDatabase();
+
+
+describe('test suite works', () => {
+  it("should hit health check", async () => {
+    const res = await fetch(`${TEST_SERVER_URL}/health`);
+    expect(res.status).toEqual(200);
+  });
+})
+
+/****************************************
+ * PROPOSALS
+ ****************************************/
 
 describe("Proposals API", () => {
   it("returns 404 on no proposals", async () => {
@@ -145,3 +157,74 @@ describe("Proposals API", () => {
     });
   });
 });
+
+/****************************************
+ * DRAFTS
+ ****************************************/
+
+describe('smoke tests', () => {
+  it('index route 404 on empty db', async () => {
+    await resetDatabase();
+    const res = await fetch(`${TEST_SERVER_URL}/drafts`);
+    const data = await res.json();
+    expect(res.status).toEqual(404);
+  })
+
+  it('store route', async () => {
+    const res = await fetch(`${TEST_SERVER_URL}/drafts/`, {
+      method: 'POST',
+      body: JSON.stringify({})
+    });
+    expect(res.status).toEqual(201);
+  })
+})
+
+describe('factory and count services', () => {
+  it('should create and count drafts', async () => {
+    await resetDatabase()
+    const email = 'test@example.com';
+    const customTitle = 'Custom Title';
+    const draftData = DraftsService.factory({ title: customTitle });
+    await DraftsService.store(draftData, email);
+    const count = await DraftsService.count();
+    expect(count).toBeGreaterThan(0);
+    await assertDatabaseHas("drafts", { title: customTitle });
+  });
+});
+
+/****************************************
+ * WINNER
+ ****************************************/
+
+describe("winner endpoint", () => {
+  it("should return leading proposal and mark closed", async () => {
+    await resetDatabase();
+    const proposals = await seedDb.addProposals(2);
+    const winningProposal = proposals[0];
+    await seedDb.addUserVote(winningProposal.id, undefined, 2);
+    await seedDb.addUserVote(proposals[1].id, undefined, -2)
+    const res = await fetch(`${TEST_SERVER_URL}/winner`);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.id).toEqual(winningProposal.id);
+    expect(data.status).toBe('closed');
+  })
+})
+
+describe("winner endpoint - tied proposals", () => {
+  it("should return a random winner in case of tie", async () => {
+    await resetDatabase();
+    const proposals = await seedDb.addProposals(3);
+    for (const proposal of proposals) {
+      await seedDb.addUserVote(proposal.id, undefined, 2)
+    }
+    const res = await fetch(`${TEST_SERVER_URL}/winner`);
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.status).toBe('closed');
+    const remainingProposals = proposals.filter(p => p.id !== data.id);
+    for (const proposal of remainingProposals) {
+      expect(proposal.status).toBe('open');
+    }
+  })
+})
