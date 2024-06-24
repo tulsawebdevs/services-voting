@@ -1,13 +1,18 @@
 import { z } from 'zod'
-import {PendingDraft} from "./draft";
-const Vote = z.object({
-	email: z.string().max(255),
-	proposalId: z.number().int().positive(),
-	value: z.number().min(-2).max(2).nullable(),
-	comment: z.string().max(255),
+
+const VoteResponse = z.object({
 	id: z.number().int().positive(),
-	created: z.string(),
-	updated: z.string(),
+	created: z.number(),
+	updated: z.number(),
+	value: z.number().min(-2).max(2).nullable(),
+	comment: z.string().max(255).optional().nullable()
+})
+
+type VoteResponse = z.infer<typeof VoteResponse>
+
+const Vote = VoteResponse.extend({
+	voterEmail: z.string().max(255),
+	proposalId: z.number().int().positive(),
 })
 
 type Vote = z.infer<typeof Vote>
@@ -19,4 +24,4 @@ const PendingVote = z.object({
 
 type PendingVote = z.infer<typeof PendingVote>
 
-export { Vote, PendingVote }
+export { Vote, PendingVote, VoteResponse }
