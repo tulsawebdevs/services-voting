@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { PendingProposal, Proposal } from "../../types/proposal";
+import {PendingProposal, ProposalResponse} from "../../types/proposal";
 import ProposalService from "../../services/proposals";
 import VotesService from "../../services/votes";
 
@@ -38,7 +38,7 @@ export function seedDatabase({ numUsers = 50, numAuthors = 5, seed = 1 }: SeedOp
    * PROPOSALS
    ****************************************/
   async function addProposals(numProposals: number = 1) {
-    const proposals: Proposal[] = [];
+    const proposals: ProposalResponse[] = [];
 
     for (let i = 0; i < numProposals; i += 1) {
       const newProposal = await PendingProposal.parseAsync(ProposalService.factory());
