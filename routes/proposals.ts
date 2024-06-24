@@ -2,7 +2,7 @@ import express from 'express';
 import ProposalsService from '../services/proposals';
 import { SchemaValidationError } from 'slonik';
 import { NotFoundError, filterNullValues, formatQueryErrorResponse, validateRequest } from '../helpers';
-import { PendingProposal, Proposal } from '../types/proposal';
+import { PendingProposal, ProposalResponse } from '../types/proposal';
 import VotesRouter from "./votes";
 import { z } from "zod";
 
@@ -42,7 +42,7 @@ router.get("/", validateRequest(IndexRequest), async (req, res) => {
   try {
     if (recordId) {
       let proposal = await ProposalsService.show(recordId);
-      proposal = filterNullValues(proposal) as Proposal
+      proposal = filterNullValues(proposal) as ProposalResponse
       return res.status(200).json(proposal);
     } else {
       let proposals = await ProposalsService.index(type, status, cursor, limit, req.user.userEmail);
@@ -54,7 +54,7 @@ router.get("/", validateRequest(IndexRequest), async (req, res) => {
         proposals = proposals.slice(0, limit); // Remove the extra draft
         nextCursor = (cursor ?? 0) + limit;
       }
-      proposals = proposals.map(filterNullValues) as Proposal[]
+      proposals = proposals.map(filterNullValues) as ProposalResponse[]
       const response = {
         limit: limit || proposals.length,
         proposals: proposals,
@@ -80,7 +80,7 @@ router.post("/", validateRequest(PostRequest), async (req, res) => {
 
   try {
     let proposal = await ProposalsService.store(validationResult, req.user.userFullName, req.user.userEmail);
-    proposal = filterNullValues(proposal) as Proposal
+    proposal = filterNullValues(proposal) as ProposalResponse
     return res.status(201).json(proposal);
   } catch (e) {
     console.log(e)

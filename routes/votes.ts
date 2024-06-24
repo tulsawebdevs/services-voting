@@ -1,7 +1,7 @@
 import express from "express";
 import VotesService from '../services/votes';
 import {filterNullValues, validateRequest} from '../helpers';
-import {PendingVote, Vote} from '../types/vote';
+import {PendingVote, VoteResponse} from '../types/vote';
 import { z } from "zod";
 
 const router = express.Router();
@@ -28,9 +28,11 @@ router.post("/", validateRequest(PostRequest), async (req, res) => {
   const { recordId } = req.validated.query as RecordQuery
   const validationResult = req.validated.body as PendingVote
 
+  console.log('Received data for storing vote:', { recordId, validationResult, userEmail: req.user.userEmail });
+
   try{
     let vote = await VotesService.store(validationResult, recordId, req.user.userEmail);
-    vote = filterNullValues(vote) as Vote;
+    vote = filterNullValues(vote) as VoteResponse;
     return res.status(201).json(vote);
   }catch(e){
     console.log(e)

@@ -2,7 +2,7 @@ import express from "express";
 import DraftsService from '../services/drafts';
 import { SchemaValidationError } from 'slonik';
 import {filterNullValues, formatQueryErrorResponse, validateRequest} from '../helpers';
-import {PendingDraft, DraftUpdate, Draft} from '../types/draft';
+import {PendingDraft, DraftUpdate, DraftResponse} from '../types/draft';
 import { z } from "zod";
 
 const router = express.Router();
@@ -56,7 +56,7 @@ router.get("/", validateRequest(IndexRequest), async (req, res) => {
   try {
     if (recordId) {
       let draft = await DraftsService.show(recordId);
-      draft = filterNullValues(draft) as Draft
+      draft = filterNullValues(draft) as DraftResponse
       return res.status(200).json(draft);
     } else {
       let drafts = await DraftsService.index(req.user.userEmail, type, cursor, limit);
@@ -68,7 +68,7 @@ router.get("/", validateRequest(IndexRequest), async (req, res) => {
         drafts = drafts.slice(0, limit);
         nextCursor = (cursor ?? 0) + limit;
       }
-      const filteredDrafts = drafts.map(filterNullValues) as Draft[]
+      const filteredDrafts = drafts.map(filterNullValues) as DraftResponse[]
       const response  = {
         limit: limit || drafts.length,
         drafts: filteredDrafts,
@@ -92,7 +92,7 @@ router.post("/", validateRequest(PostRequest), async (req, res) => {
 
   try{
     let draft = await DraftsService.store(validationResult, req.user.userEmail);
-    draft = filterNullValues(draft) as Draft
+    draft = filterNullValues(draft) as DraftResponse
 
     return res.status(201).json(draft);
   }catch(e){
