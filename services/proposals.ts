@@ -1,7 +1,7 @@
 import { getPool } from '../database';
 import { sql } from 'slonik';
 import { update as slonikUpdate } from 'slonik-utilities';
-import { Proposal, ProposalState, PendingProposal, ProposalUpdate } from '../types/proposal';
+import {Proposal, ProposalState, PendingProposal, ProposalUpdate, ProposalResponse} from '../types/proposal';
 import { NotFoundError } from '../helpers';
 import {number} from "zod";
 import {faker} from "@faker-js/faker";
@@ -40,7 +40,7 @@ async function index(
 		const rows = await connection.any(sql.type(ProposalState)`
         SELECT 
             p.id, p.created, p.updated, p.title, p.summary, p.description, p.type,
-						p.status, p.author_name AS "authorName", ${userVote}, ${results}
+						p.status, p.author_name, ${userVote}, ${results}
         FROM proposals AS p
         LEFT JOIN votes AS v ON v.proposal_id = p.id
 				LEFT JOIN LATERAL (
@@ -67,23 +67,25 @@ async function index(
 	});
 }
 
-async function store(data: PendingProposal, author: string, email: string): Promise<Proposal> {
+async function store(data: PendingProposal, author: string, email: string): Promise<ProposalResponse> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const proposal = await connection.one(sql.type(Proposal)`
 		INSERT INTO proposals (title, summary, description, type, author_name, voter_email) 
 		VALUES (${data.title}, ${data.summary}, ${data.description ?? null}, ${data.type}, ${author}, ${email}) 
-		RETURNING author_name AS "authorName", status, title, summary, description, type, id, created, updated;`)
+		RETURNING *;`)
 
-		return proposal;
+		const { voterEmail, ...rest} = proposal
+		return rest;
 	});
 }
 
-async function show(id: number): Promise<Proposal> {
+async function show(id: number): Promise<ProposalResponse> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
-		const proposal = await connection.maybeOne(sql.type(Proposal)`
-		SELECT * FROM proposals WHERE id = ${id};`)
+		const proposal = await connection.maybeOne(sql.type(ProposalResponse)`
+		SELECT id, created, updated, summary, description, type, status, author_name, title
+		FROM proposals WHERE id = ${id};`)
 
 		if (!proposal) throw new NotFoundError('Proposal not found');
 
