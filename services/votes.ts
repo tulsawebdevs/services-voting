@@ -1,8 +1,8 @@
 import { getPool } from '../database';
 import { sql} from 'slonik';
 import {Vote, PendingVote, VoteResponse} from '../types/vote';
-import {number} from "zod";
 import { faker } from "@faker-js/faker";
+import { countSchema } from '../helpers';
 
 async function store(data: PendingVote, recordId: number, email: string): Promise<VoteResponse> {
 	const pool = await getPool();
@@ -34,7 +34,7 @@ async function destroy(proposalId: number, email: string) {
 async function count(): Promise<number> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
-		const result = await connection.oneFirst(sql.type(number())`
+		const result = await connection.oneFirst(sql.type(countSchema)`
         SELECT COUNT(*) FROM votes;`);
 		return Number(result);
 	});

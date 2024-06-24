@@ -2,8 +2,7 @@ import { getPool } from '../database';
 import { sql} from 'slonik';
 import {update as slonikUpdate} from 'slonik-utilities';
 import {Draft, DraftBody, DraftResponse, DraftUpdate, PendingDraft} from '../types/draft';
-import {filterNullValues} from "../helpers";
-import {number} from "zod";
+import {filterNullValues, countSchema} from "../helpers";
 import { faker } from "@faker-js/faker";
 
 async function index(email: string, type?: string, cursor?: number, limit?: number): Promise<readonly DraftResponse[]> {
@@ -82,7 +81,7 @@ async function destroy(id: number) {
 async function count(): Promise<number> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
-		const result = await connection.oneFirst(sql.type(number())`
+		const result = await connection.oneFirst(sql.type(countSchema)`
         SELECT COUNT(*) FROM drafts;`);
 		return Number(result);
 	});

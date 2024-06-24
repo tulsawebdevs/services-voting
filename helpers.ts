@@ -1,5 +1,5 @@
 import { SchemaValidationError } from "slonik";
-import { AnyZodObject, ZodError } from "zod";
+import { AnyZodObject, ZodError, z } from "zod";
 import { Request, Response, NextFunction } from "express";
 
 export function formatQueryErrorResponse(e: SchemaValidationError) {
@@ -58,3 +58,7 @@ export class NotFoundError extends Error {
 		this.name = 'NotFoundError';
 	}
 }
+
+export const countSchema = z.object({
+	count: z.bigint(),
+});
