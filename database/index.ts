@@ -1,14 +1,27 @@
 import { DatabasePool, sql } from 'slonik';
 import { 
-	createPool, 
+	createPool,
+    type Interceptor,
+    type QueryResultRow,
+    SchemaValidationError,
+    createTypeParserPreset
 } from 'slonik';
+import {
+  createFieldNameTransformationInterceptor
+} from 'slonik-interceptor-field-name-transformation';
 
 const DB_URL = process.env.DB_URL || 'postgres://postgres:postgres@db:5432/postgres';
 const CA_CERT = process.env.CA_CERT
 let pool: DatabasePool;
 
 const baseConfig = {
-  typeParsers:[]
+  interceptors: [
+    createFieldNameTransformationInterceptor({
+      format: 'CAMEL_CASE'
+    }),
+    createResultParserInterceptor()
+  ],
+  typeParsers:[...createTypeParserPreset()]
 }
 
 const envConfigs: {[env:string]:{}} = {
@@ -47,4 +60,34 @@ export async function resetDatabase(){
   await pool.connect(
     async (connection) => await connection.query(sql.unsafe`TRUNCATE votes CASCADE`)
   )
+}
+
+function createResultParserInterceptor(): Interceptor {
+  return {
+    // If you are not going to transform results using Zod, then you should use `afterQueryExecution` instead.
+    // Future versions of Zod will provide a more efficient parser when parsing without transformations.
+    // You can even combine the two – use `afterQueryExecution` to validate results, and (conditionally)
+    // transform results as needed in `transformRow`.
+    transformRow: async (executionContext, actualQuery, row) => {
+      const { log, resultParser } = executionContext;
+
+      if (!resultParser) {
+        return row;
+      }
+
+      // It is recommended (but not required) to parse async to avoid blocking the event loop during validation
+      const validationResult = await resultParser.safeParseAsync(row);
+
+      if (!validationResult.success) {
+        console.log('Validation failed:', validationResult.error.issues);
+        throw new SchemaValidationError(
+            actualQuery,
+            row,
+            validationResult.error.issues
+        );
+      }
+
+      return validationResult.data as QueryResultRow;
+    },
+  };
 }
