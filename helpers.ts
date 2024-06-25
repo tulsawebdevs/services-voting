@@ -58,7 +58,3 @@ export class NotFoundError extends Error {
 		this.name = 'NotFoundError';
 	}
 }
-
-export const countSchema = z.object({
-	count: z.bigint(),
-});

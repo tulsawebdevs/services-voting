@@ -8,10 +8,7 @@ async function assertDatabaseHas(table: string, conditions: Record<string, any>)
         sql.fragment`${sql.identifier([key])} = ${conditions[key]}`
     );
     const whereCondition = sql.join(conditionFragments, sql.fragment` AND `);
-    const existsSchema = z.object({
-        exists: z.boolean(),
-    });
-    const query = sql.type(existsSchema)`
+    const query = sql.unsafe`
         SELECT EXISTS (
             SELECT 1
             FROM ${sql.identifier([table])}
