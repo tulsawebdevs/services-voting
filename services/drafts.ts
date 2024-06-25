@@ -5,7 +5,24 @@ import {Draft, DraftBody, DraftResponse, DraftUpdate, PendingDraft} from '../typ
 import {filterNullValues} from "../helpers";
 import { faker } from "@faker-js/faker";
 
-async function index(email: string, type?: string, cursor?: number, limit?: number): Promise<readonly DraftResponse[]> {
+interface IndexParams {
+	email: string;
+	type?: string;
+	cursor?: number;
+	limit?: number;
+}
+
+interface StoreParams {
+	data: DraftUpdate;
+	email: string;
+}
+
+interface UpdateParams {
+	id: number;
+	data: DraftBody;
+}
+
+async function index({ email, type, cursor, limit }: IndexParams): Promise<readonly DraftResponse[]> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const adjustedLimit = limit ? limit + 1 : null;
@@ -22,7 +39,7 @@ async function index(email: string, type?: string, cursor?: number, limit?: numb
 	});
 }
 
-async function store(data: DraftUpdate, email: string): Promise<DraftResponse> {
+async function store({ data, email }: StoreParams): Promise<DraftResponse> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const draft = await connection.one(sql.type(Draft)`
@@ -48,7 +65,7 @@ async function show(id: number): Promise<DraftResponse> {
 	});
 }
 
-async function update(id: number, data: DraftBody): Promise<Draft> {
+async function update({ id, data }: UpdateParams): Promise<Draft> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const result = await slonikUpdate(

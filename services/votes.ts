@@ -3,7 +3,18 @@ import { sql} from 'slonik';
 import {Vote, PendingVote, VoteResponse} from '../types/vote';
 import { faker } from "@faker-js/faker";
 
-async function store(data: PendingVote, recordId: number, email: string): Promise<VoteResponse> {
+interface StoreParams {
+	data: PendingVote,
+	recordId: number,
+	email: string
+}
+
+interface DestroyParams {
+	recordId: number,
+	email: string
+}
+
+async function store({ data, recordId, email }: StoreParams): Promise<VoteResponse> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const newVote = await connection.one(sql.type(Vote)`
@@ -20,12 +31,12 @@ async function store(data: PendingVote, recordId: number, email: string): Promis
 }
 
 
-async function destroy(proposalId: number, email: string) {
+async function destroy({ recordId, email }: DestroyParams) {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const result = await connection.query(sql.unsafe`
 			DELETE FROM votes 
-			WHERE proposal_id = ${proposalId} AND voter_email = ${email};`)
+			WHERE proposal_id = ${recordId} AND voter_email = ${email};`)
 		return result.rowCount;
 	});
 }

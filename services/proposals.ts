@@ -5,13 +5,26 @@ import {Proposal, ProposalState, PendingProposal, ProposalUpdate, ProposalRespon
 import { NotFoundError } from '../helpers';
 import {faker} from "@faker-js/faker";
 
-async function index(
+interface IndexParams {
 	type?: string,
 	status?: string,
 	cursor?: number,
 	limit?: number,
 	userEmail?: string
-): Promise<readonly ProposalState[]> {
+}
+
+interface StoreParams {
+	data: PendingProposal,
+	author: string,
+	email: string
+}
+
+interface UpdateParams {
+	id: number;
+	data: ProposalUpdate;
+}
+
+async function index({ type, status, cursor, limit, userEmail }: IndexParams): Promise<readonly ProposalState[]> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const adjustedLimit = limit ? limit + 1 : null;
@@ -66,7 +79,7 @@ async function index(
 	});
 }
 
-async function store(data: PendingProposal, author: string, email: string): Promise<ProposalResponse> {
+async function store({ data, author, email }: StoreParams): Promise<ProposalResponse> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const proposal = await connection.one(sql.type(Proposal)`
@@ -92,7 +105,7 @@ async function show(id: number): Promise<ProposalResponse> {
 	});
 }
 
-async function update(id: number, data: ProposalUpdate) {
+async function update({ id, data }: UpdateParams) {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		return await slonikUpdate(

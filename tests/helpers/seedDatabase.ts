@@ -45,7 +45,11 @@ export function seedDatabase({ numUsers = 50, numAuthors = 5, seed = 1 }: SeedOp
 
       const author = faker.helpers.arrayElement(authors);
 
-      const proposal = await ProposalService.store(newProposal, author.displayName, author.email);
+      const proposal = await ProposalService.store({
+        data: newProposal,
+        author: author.displayName,
+        email: author.email
+      });
 
       proposals.push(proposal);
     }
@@ -66,22 +70,22 @@ export function seedDatabase({ numUsers = 50, numAuthors = 5, seed = 1 }: SeedOp
     for (let i = 0; i < totalVotes; i += 1) {
       const email = shuffledUsers[i].email;
 
-      await VotesService.store(
-        VotesService.factory(),
-        proposalId,
+      await VotesService.store({
+        data: VotesService.factory(),
+        recordId: proposalId,
         email
-      )
+      })
     }
   }
 
   async function addUserVote(proposalId: number, userEmail?: string, value: number = 1) {
     userEmail = userEmail || (faker.helpers.arrayElement(users)).email;
 
-    await VotesService.store(
-      VotesService.factory({value: value}),
-      proposalId,
-      userEmail
-    )
+    await VotesService.store({
+      data: VotesService.factory({value: value}),
+      recordId: proposalId,
+      email: userEmail
+    })
   }
 
   return {

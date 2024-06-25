@@ -45,7 +45,13 @@ router.get("/", validateRequest(IndexRequest), async (req, res) => {
       proposal = filterNullValues(proposal) as ProposalResponse
       return res.status(200).json(proposal);
     } else {
-      let proposals = await ProposalsService.index(type, status, cursor, limit, req.user.userEmail);
+      let proposals = await ProposalsService.index({
+        type: type,
+        status: status,
+        cursor: cursor,
+        limit: limit,
+        userEmail: req.user.userEmail
+      });
       if (proposals.length === 0) {
         return res.status(404).json({ message: 'No proposals found' });
       }
@@ -79,7 +85,11 @@ router.post("/", validateRequest(PostRequest), async (req, res) => {
   const validationResult = req.validated.body as PendingProposal
 
   try {
-    let proposal = await ProposalsService.store(validationResult, req.user.userFullName, req.user.userEmail);
+    let proposal = await ProposalsService.store({
+      data: validationResult,
+      author: req.user.userFullName,
+      email: req.user.userEmail
+    });
     proposal = filterNullValues(proposal) as ProposalResponse
     return res.status(201).json(proposal);
   } catch (e) {
