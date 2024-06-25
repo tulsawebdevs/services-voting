@@ -1,10 +1,10 @@
 import { z } from 'zod'
 
 const DraftResponse = z.object({
-	title: z.string().max(48).optional().nullable(),
-	summary: z.string().max(255).optional().nullable(),
-	description: z.string().max(2048).optional().nullable(),
-	type: z.enum(['topic', 'project']).optional().nullable(),
+	title: z.string().max(48).nullable(),
+	summary: z.string().max(255).nullable(),
+	description: z.string().max(2048).nullable(),
+	type: z.enum(['topic', 'project']).nullable(),
 	id: z.number().int().positive(),
 	created: z.string(),
 	updated: z.string(),
