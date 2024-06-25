@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-const Proposal = z.object({
+const ProposalResponse = z.object({
 	id: z.number().int().positive(),
 	created: z.string(),
 	updated: z.string(),
@@ -9,22 +9,28 @@ const Proposal = z.object({
 	description: z.string().max(2048),
 	type: z.enum(['topic', 'project']),
 	status: z.enum(['open', 'closed']),
-	author_name: z.string().min(4),
+	authorName: z.string().min(4),
+})
+
+type ProposalResponse = z.infer<typeof ProposalResponse>
+
+const Proposal = ProposalResponse.extend({
+	voterEmail: z.string().max(255)
 })
 
 type Proposal = z.infer<typeof Proposal>
 
-const ProposalState = Proposal.extend({
-	user_vote: z.object({
+const ProposalState = ProposalResponse.extend({
+	userVote: z.object({
 		value: z.number().min(-2).max(2).nullable(),
 		comment: z.string(),
-	}).optional(),
+	}).optional().nullable(),
 	results: z.array(
 		z.object({
 			value: z.number().min(-2).max(2).nullable(),
 			comment: z.string(),
 		})
-	).optional(),
+	).optional().nullable(),
 })
 
 type ProposalState = z.infer<typeof ProposalState>
@@ -42,4 +48,4 @@ const ProposalUpdate = PendingProposal.partial()
 
 type ProposalUpdate = z.infer<typeof ProposalUpdate>
 
-export { Proposal, ProposalState, PendingProposal, ProposalUpdate }
+export { Proposal, ProposalState, PendingProposal, ProposalUpdate, ProposalResponse }

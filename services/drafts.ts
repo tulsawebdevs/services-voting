@@ -1,19 +1,35 @@
 import { getPool } from '../database';
 import { sql} from 'slonik';
 import {update as slonikUpdate} from 'slonik-utilities';
-import {Draft, DraftBody, DraftUpdate, PendingDraft} from '../types/draft';
+import {Draft, DraftBody, DraftResponse, DraftUpdate, PendingDraft} from '../types/draft';
 import {filterNullValues} from "../helpers";
-import {number} from "zod";
 import { faker } from "@faker-js/faker";
 
-async function index(email: string, type?: string, cursor?: number, limit?: number): Promise<readonly Draft[]> {
+interface IndexParams {
+	email: string;
+	type?: string;
+	cursor?: number;
+	limit?: number;
+}
+
+interface StoreParams {
+	data: DraftUpdate;
+	email: string;
+}
+
+interface UpdateParams {
+	id: number;
+	data: DraftBody;
+}
+
+async function index({ email, type, cursor, limit }: IndexParams): Promise<readonly DraftResponse[]> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const adjustedLimit = limit ? limit + 1 : null;
-		const rows = await connection.any(sql.type(Draft)`
+		const rows = await connection.any(sql.type(DraftResponse)`
 		SELECT id, created, updated, title, summary, description, type 
 		FROM drafts
-		WHERE email = ${email}
+		WHERE voter_email = ${email}
 		${type ? sql.fragment`AND type = ${type}` : sql.fragment``}
 		ORDER BY id 
 		OFFSET ${cursor ?? null} 
@@ -23,22 +39,23 @@ async function index(email: string, type?: string, cursor?: number, limit?: numb
 	});
 }
 
-async function store(data: DraftUpdate, email: string): Promise<Draft> {
+async function store({ data, email }: StoreParams): Promise<DraftResponse> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const draft = await connection.one(sql.type(Draft)`
-		INSERT INTO drafts (title, summary, description, type, email) 
+		INSERT INTO drafts (title, summary, description, type, voter_email) 
 		VALUES (${data.title ?? null}, ${data.summary ?? null}, ${data.description ?? null}, ${data.type ?? null}, ${email}) 
-		RETURNING id, created, updated, title, summary, description, type;`)
+		RETURNING *;`)
 
-		return draft;
+		const { voterEmail, ...rest } = draft
+		return rest;
 	});
 }
 
-async function show(id: number): Promise<Draft> {
+async function show(id: number): Promise<DraftResponse> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
-		const draft = await connection.maybeOne(sql.type(Draft)`
+		const draft = await connection.maybeOne(sql.type(DraftResponse)`
 		SELECT id, created, updated, title, summary, description, type 
 		FROM drafts 
 		WHERE id = ${id};`)
@@ -48,7 +65,7 @@ async function show(id: number): Promise<Draft> {
 	});
 }
 
-async function update(id: number, data: DraftBody): Promise<Draft> {
+async function update({ id, data }: UpdateParams): Promise<Draft> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const result = await slonikUpdate(
@@ -81,7 +98,7 @@ async function destroy(id: number) {
 async function count(): Promise<number> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
-		const result = await connection.oneFirst(sql.type(number())`
+		const result = await connection.oneFirst(sql.unsafe`
         SELECT COUNT(*) FROM drafts;`);
 		return Number(result);
 	});

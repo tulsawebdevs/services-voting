@@ -185,7 +185,7 @@ describe('factory and count services', () => {
     const email = 'test@example.com';
     const customTitle = 'Custom Title';
     const draftData = DraftsService.factory({ title: customTitle });
-    await DraftsService.store(draftData, email);
+    await DraftsService.store({data: draftData, email});
     const count = await DraftsService.count();
     expect(count).toBeGreaterThan(0);
     await assertDatabaseHas("drafts", { title: customTitle });

@@ -1,13 +1,19 @@
 import { z } from 'zod'
 
-const Draft = z.object({
-	title: z.string().max(48).optional(),
-	summary: z.string().max(255).optional(),
-	description: z.string().max(2048).optional(),
-	type: z.enum(['topic', 'project']).optional(),
+const DraftResponse = z.object({
+	title: z.string().max(48).nullable(),
+	summary: z.string().max(255).nullable(),
+	description: z.string().max(2048).nullable(),
+	type: z.enum(['topic', 'project']).nullable(),
 	id: z.number().int().positive(),
 	created: z.string(),
 	updated: z.string(),
+})
+
+type DraftResponse = z.infer<typeof DraftResponse>
+
+const Draft = DraftResponse.extend({
+	voterEmail: z.string().max(255)
 })
 
 type Draft = z.infer<typeof Draft>
@@ -29,4 +35,4 @@ const DraftBody = z.union([PendingDraft, DraftUpdate])
 
 type DraftBody = z.infer<typeof DraftBody>
 
-export { Draft, PendingDraft, DraftUpdate, DraftBody }
+export { Draft, PendingDraft, DraftUpdate, DraftBody, DraftResponse }

@@ -1,31 +1,42 @@
 import { getPool } from '../database';
 import { sql} from 'slonik';
-import { Vote, PendingVote } from '../types/vote';
-import {number} from "zod";
+import {Vote, PendingVote, VoteResponse} from '../types/vote';
 import { faker } from "@faker-js/faker";
 
-async function store(data: PendingVote, proposalId: number, email: string): Promise<Vote> {
+interface StoreParams {
+	data: PendingVote,
+	recordId: number,
+	email: string
+}
+
+interface DestroyParams {
+	recordId: number,
+	email: string
+}
+
+async function store({ data, recordId, email }: StoreParams): Promise<VoteResponse> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const newVote = await connection.one(sql.type(Vote)`
 			INSERT INTO votes (voter_email, proposal_id, vote, comment)
-			VALUES (${email}, ${proposalId}, ${data.value}, ${data.comment ?? null})
+			VALUES (${email}, ${recordId}, ${data.value}, ${data.comment ?? null})
 			ON CONFLICT (voter_email, proposal_id) 
             DO UPDATE SET
 				vote = EXCLUDED.vote,
 				comment = EXCLUDED.comment
-			RETURNING vote AS value, comment, id, created, updated;`);
-		return newVote;
+			RETURNING vote AS value, comment, id, created, updated, proposal_id, voter_email;`);
+		const { voterEmail, proposalId, ...rest } = newVote;
+		return rest;
 	});
 }
 
 
-async function destroy(proposalId: number, email: string) {
+async function destroy({ recordId, email }: DestroyParams) {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
 		const result = await connection.query(sql.unsafe`
 			DELETE FROM votes 
-			WHERE proposal_id = ${proposalId} AND voter_email = ${email};`)
+			WHERE proposal_id = ${recordId} AND voter_email = ${email};`)
 		return result.rowCount;
 	});
 }
@@ -33,7 +44,7 @@ async function destroy(proposalId: number, email: string) {
 async function count(): Promise<number> {
 	const pool = await getPool();
 	return await pool.connect(async (connection) => {
-		const result = await connection.oneFirst(sql.type(number())`
+		const result = await connection.oneFirst(sql.unsafe`
         SELECT COUNT(*) FROM votes;`);
 		return Number(result);
 	});

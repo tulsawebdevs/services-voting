@@ -2,7 +2,7 @@ import express from "express";
 import DraftsService from '../services/drafts';
 import { SchemaValidationError } from 'slonik';
 import {filterNullValues, formatQueryErrorResponse, validateRequest} from '../helpers';
-import {PendingDraft, DraftUpdate, Draft} from '../types/draft';
+import {PendingDraft, DraftUpdate, DraftResponse} from '../types/draft';
 import { z } from "zod";
 
 const router = express.Router();
@@ -56,10 +56,15 @@ router.get("/", validateRequest(IndexRequest), async (req, res) => {
   try {
     if (recordId) {
       let draft = await DraftsService.show(recordId);
-      draft = filterNullValues(draft) as Draft
+      draft = filterNullValues(draft) as DraftResponse
       return res.status(200).json(draft);
     } else {
-      let drafts = await DraftsService.index(req.user.userEmail, type, cursor, limit);
+      let drafts = await DraftsService.index({
+        email: req.user.userEmail,
+        type,
+        cursor,
+        limit
+      });
       if (drafts.length === 0) {
         return res.status(404).json({ message: 'No drafts found' });
       }
@@ -68,7 +73,7 @@ router.get("/", validateRequest(IndexRequest), async (req, res) => {
         drafts = drafts.slice(0, limit);
         nextCursor = (cursor ?? 0) + limit;
       }
-      const filteredDrafts = drafts.map(filterNullValues) as Draft[]
+      const filteredDrafts = drafts.map(filterNullValues) as DraftResponse[]
       const response  = {
         limit: limit || drafts.length,
         drafts: filteredDrafts,
@@ -91,8 +96,11 @@ router.post("/", validateRequest(PostRequest), async (req, res) => {
   const validationResult = req.validated.body as PendingDraft
 
   try{
-    let draft = await DraftsService.store(validationResult, req.user.userEmail);
-    draft = filterNullValues(draft) as Draft
+    let draft = await DraftsService.store({
+      data: validationResult,
+      email: req.user.userEmail
+    });
+    draft = filterNullValues(draft) as DraftResponse
 
     return res.status(201).json(draft);
   }catch(e){
@@ -105,7 +113,7 @@ router.put("/", validateRequest(PutRequest), async (req, res) => {
   const { recordId } = req.validated.query as RecordQuery;
   const validationResult = req.validated.body as PendingDraft;
   try {
-    const draft = await DraftsService.update(recordId, validationResult);
+    const draft = await DraftsService.update({ id: recordId, data: validationResult });
     return res.status(200).json(draft);
   } catch (e) {
     if (e instanceof Error && e.message.includes('Draft not found')) {
@@ -120,7 +128,7 @@ router.patch("/", validateRequest(PatchRequest), async (req, res) => {
   const { recordId } = req.validated.query as RecordQuery;
   const validationResult = req.validated.body as DraftUpdate;
   try {
-    const draft = await DraftsService.update(recordId, validationResult);
+    const draft = await DraftsService.update({ id: recordId, data: validationResult });
     return res.status(200).json(draft);
   } catch (e) {
     if (e instanceof Error && e.message.includes('Draft not found')) {
