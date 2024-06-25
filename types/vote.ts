@@ -2,8 +2,8 @@ import { z } from 'zod'
 
 const VoteResponse = z.object({
 	id: z.number().int().positive(),
-	created: z.number(),
-	updated: z.number(),
+	created: z.string(),
+	updated: z.string(),
 	value: z.number().min(-2).max(2).nullable(),
 	comment: z.string().max(255).optional().nullable()
 })

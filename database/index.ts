@@ -3,8 +3,7 @@ import {
 	createPool,
     type Interceptor,
     type QueryResultRow,
-    SchemaValidationError,
-    createTypeParserPreset
+    SchemaValidationError
 } from 'slonik';
 import {
   createFieldNameTransformationInterceptor
@@ -14,6 +13,15 @@ const DB_URL = process.env.DB_URL || 'postgres://postgres:postgres@db:5432/postg
 const CA_CERT = process.env.CA_CERT
 let pool: DatabasePool;
 
+const customTypeParsers = [
+  {
+    name: 'timestamptz',
+    parse: (value: string) => {
+      return value;
+    }
+  }
+];
+
 const baseConfig = {
   interceptors: [
     createFieldNameTransformationInterceptor({
@@ -21,7 +29,7 @@ const baseConfig = {
     }),
     createResultParserInterceptor()
   ],
-  typeParsers:[...createTypeParserPreset()]
+  typeParsers: customTypeParsers
 }
 
 const envConfigs: {[env:string]:{}} = {

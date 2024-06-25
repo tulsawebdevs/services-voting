@@ -2,8 +2,8 @@ import { z } from 'zod'
 
 const ProposalResponse = z.object({
 	id: z.number().int().positive(),
-	created: z.number(),
-	updated: z.number(),
+	created: z.string(),
+	updated: z.string(),
 	title: z.string().min(8).max(48),
 	summary: z.string().min(30).max(255),
 	description: z.string().max(2048),
