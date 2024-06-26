@@ -6,7 +6,7 @@ const ProposalResponse = z.object({
 	updated: z.string(),
 	title: z.string().min(8).max(48),
 	summary: z.string().min(30).max(255),
-	description: z.string().max(2048),
+	description: z.string().max(2048).nullable(),
 	type: z.enum(['topic', 'project']),
 	status: z.enum(['open', 'closed']),
 	authorName: z.string().min(4),
