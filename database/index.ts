@@ -17,7 +17,7 @@ const customTypeParsers = [
   {
     name: 'timestamptz',
     parse: (value: string) => {
-      return value;
+      return new Date(value).toISOString();
     }
   }
 ];
