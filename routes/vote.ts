@@ -1,5 +1,5 @@
 import express from "express";
-import VotesService from '../services/votes';
+import VoteService from '../services/vote';
 import {filterNullValues, validateRequest} from '../helpers';
 import {PendingVote, VoteResponse} from '../types/vote';
 import { z } from "zod";
@@ -31,7 +31,7 @@ router.post("/", validateRequest(PostRequest), async (req, res) => {
   console.log('Received data for storing vote:', { recordId, validationResult, userEmail: req.user.userEmail });
 
   try{
-    let vote = await VotesService.store({
+    let vote = await VoteService.store({
       data: validationResult,
       recordId,
       email: req.user.userEmail});
@@ -46,7 +46,7 @@ router.post("/", validateRequest(PostRequest), async (req, res) => {
 router.delete("/", validateRequest(DeleteRequest), async (req, res) => {
   const { recordId } = req.validated.query as RecordQuery
   try {
-    const rowCount = await VotesService.destroy({ recordId, email: req.user.userEmail });
+    const rowCount = await VoteService.destroy({ recordId, email: req.user.userEmail });
     if (rowCount === 0) {
       return res.status(404).json({message: 'Vote not found'})
     }

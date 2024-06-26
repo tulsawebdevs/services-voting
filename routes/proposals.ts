@@ -3,12 +3,12 @@ import ProposalsService from '../services/proposals';
 import { SchemaValidationError } from 'slonik';
 import { NotFoundError, filterNullValues, formatQueryErrorResponse, validateRequest } from '../helpers';
 import { PendingProposal, ProposalResponse } from '../types/proposal';
-import VotesRouter from "./votes";
+import VoteRouter from "./vote";
 import { z } from "zod";
 
 const router = express.Router();
 
-router.use("/votes", VotesRouter)
+router.use("/vote", VoteRouter)
 
 /**
  * Request Validators

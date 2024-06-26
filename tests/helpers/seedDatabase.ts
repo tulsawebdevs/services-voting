@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import {PendingProposal, ProposalResponse} from "../../types/proposal";
 import ProposalService from "../../services/proposals";
-import VotesService from "../../services/votes";
+import VoteService from "../../services/vote";
 
 export type User = {
   firstName: string;
@@ -70,8 +70,8 @@ export function seedDatabase({ numUsers = 50, numAuthors = 5, seed = 1 }: SeedOp
     for (let i = 0; i < totalVotes; i += 1) {
       const email = shuffledUsers[i].email;
 
-      await VotesService.store({
-        data: VotesService.factory(),
+      await VoteService.store({
+        data: VoteService.factory(),
         recordId: proposalId,
         email
       })
@@ -81,8 +81,8 @@ export function seedDatabase({ numUsers = 50, numAuthors = 5, seed = 1 }: SeedOp
   async function addUserVote(proposalId: number, userEmail?: string, value: number = 1) {
     userEmail = userEmail || (faker.helpers.arrayElement(users)).email;
 
-    await VotesService.store({
-      data: VotesService.factory({value: value}),
+    await VoteService.store({
+      data: VoteService.factory({value: value}),
       recordId: proposalId,
       email: userEmail
     })
