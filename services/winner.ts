@@ -1,6 +1,7 @@
 import { getPool } from '../database';
-import {sql} from 'slonik';
-import {Proposal, ProposalState} from "../types/proposal";
+import { sql } from 'slonik';
+import { Proposal, ProposalState } from "../types/proposal";
+import { NotFoundError } from '../helpers';
 
 async function getWinner(): Promise<Proposal> {
     const pool = await getPool();
@@ -27,7 +28,7 @@ async function getWinner(): Promise<Proposal> {
             )
         `);
         if (proposals.length === 0) {
-            throw new Error('No open proposals found');
+            throw new NotFoundError('No open proposals found');
         }
         const randomIndex = Math.floor(Math.random() * proposals.length);
         const chosenProposal = proposals[randomIndex];
