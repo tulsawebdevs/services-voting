@@ -4,11 +4,11 @@ import config from '../config'
 
 const router = express.Router();
 
-router.get("/", async  (req, res) => {
+router.get("/", async (req, res) => {
     const { userEmail } = req.user;
     const { admins } = config;
     if (!admins.includes(userEmail)) {
-        res.status(401).json({message: 'Unauthorized'})
+        return res.status(401).json({ message: 'Unauthorized' })
     }
     try {
         const winner = await WinnerService.getWinner();
