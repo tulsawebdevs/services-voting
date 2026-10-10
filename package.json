@@ -19,7 +19,7 @@
     "jsonwebtoken": "9.0.2",
     "slonik": "^40.2.1",
     "slonik-utilities": "^2.0.2",
-    "slonik-interceptor-field-name-transformation": "40.2.4",
+    "slonik-interceptor-field-name-transformation": "40.2.5",
     "zod": "^3.22.4"
   },
   "devDependencies": {
